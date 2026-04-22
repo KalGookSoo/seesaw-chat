@@ -1,0 +1,484 @@
+openapi: 3.0.1
+info:
+  title: chat-demo API Documentation
+  description: API documentation for chat-demo
+  contact:
+    name: Seesaw Team
+    email: ga.miro3721@gmail.com
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+  version: 0.0.1
+servers:
+- url: /
+  description: Default Server URL
+security:
+- Bearer Authentication: []
+tags:
+- name: 친구 API
+  description: 친구 관리 및 상태 관리 API
+- name: 인증 API
+  description: "회원가입, 로그인 및 토큰 관리를 담당합니다."
+- name: 채팅방 API
+  description: 채팅방 조회 및 관리를 담당합니다.
+- name: 메시지 API
+  description: 메시지 이력 조회를 담당합니다.
+- name: 웹 푸시 구독 API
+  description: 브라우저별 웹 푸시 구독 정보를 관리합니다.
+paths:
+  /api/friends/{friendId}/accept:
+    put:
+      tags:
+      - 친구 API
+      summary: 친구 수락
+      description: 나에게 온 친구 요청을 수락합니다.
+      operationId: acceptFriend
+      parameters:
+      - name: friendId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+  /api/token/refresh:
+    post:
+      tags:
+      - 인증 API
+      summary: 토큰 갱신
+      description: 리프레시 토큰을 사용하여 새로운 액세스 토큰을 발급합니다.
+      operationId: refreshToken
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TokenRefreshRequest"
+        required: true
+      responses:
+        "200":
+          description: 토큰 갱신 성공
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/JsonWebToken"
+        "401":
+          description: 유효하지 않은 리프레시 토큰
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/JsonWebToken"
+  /api/sign-up:
+    post:
+      tags:
+      - 인증 API
+      summary: 회원가입
+      description: 새로운 사용자를 등록합니다.
+      operationId: signUp
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignUpRequest"
+        required: true
+      responses:
+        "201":
+          description: 회원가입 성공
+  /api/sign-in:
+    post:
+      tags:
+      - 인증 API
+      summary: 로그인
+      description: 사용자 인증을 수행하고 JWT 토큰을 발급합니다.
+      operationId: signIn
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignInRequest"
+        required: true
+      responses:
+        "401":
+          description: 인증 실패
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/JsonWebToken"
+        "200":
+          description: 로그인 성공
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/JsonWebToken"
+  /api/push/subscriptions:
+    post:
+      tags:
+      - 웹 푸시 구독 API
+      summary: 푸시 구독 등록/갱신
+      description: 새로운 구독 정보를 등록하거나 기존 정보를 갱신합니다.
+      operationId: subscribe
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PushSubscriptionRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PushSubscriptionResponse"
+    delete:
+      tags:
+      - 웹 푸시 구독 API
+      summary: 푸시 구독 취소
+      description: 기존 구독 정보를 삭제합니다.
+      operationId: unsubscribe
+      parameters:
+      - name: endpoint
+        in: query
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+  /api/friends/request:
+    post:
+      tags:
+      - 친구 API
+      summary: 친구 요청
+      description: 상대방의 userId로 친구 요청을 보냅니다.
+      operationId: requestFriend
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FriendRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+  /api/messages:
+    get:
+      tags:
+      - 메시지 API
+      summary: 메시지 목록 조회
+      description: 특정 채팅방의 메시지 이력을 페이징하여 조회합니다.
+      operationId: getMessages
+      parameters:
+      - name: chatRoomId
+        in: query
+        description: 채팅방 식별자
+        required: true
+        schema:
+          type: string
+      - name: pageNumber
+        in: query
+        description: 페이지 번호
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: pageSize
+        in: query
+        description: 페이지 크기
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 30
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PagedModelMessageResponse"
+  /api/friends:
+    get:
+      tags:
+      - 친구 API
+      summary: 친구 목록 조회
+      description: 수락된 친구 목록을 조회합니다.
+      operationId: getFriends
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FriendResponse"
+  /api/friends/pending:
+    get:
+      tags:
+      - 친구 API
+      summary: 대기 중인 요청 조회
+      description: 나에게 온 친구 요청 목록을 조회합니다.
+      operationId: getPendingRequests
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FriendResponse"
+  /api/chat-rooms:
+    get:
+      tags:
+      - 채팅방 API
+      summary: 참여 중인 채팅방 목록 조회
+      description: 현재 로그인한 사용자가 참여 중인 채팅방 목록을 반환합니다.
+      operationId: getChatRooms
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/ChatRoomResponse"
+  /api/friends/{friendId}:
+    delete:
+      tags:
+      - 친구 API
+      summary: 친구 삭제/거절
+      description: 친구 관계를 삭제하거나 요청을 거절합니다.
+      operationId: removeFriend
+      parameters:
+      - name: friendId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+components:
+  schemas:
+    TokenRefreshRequest:
+      required:
+      - refreshToken
+      type: object
+      properties:
+        refreshToken:
+          type: string
+          description: 리프레시 토큰
+      description: 토큰 갱신 요청
+    JsonWebToken:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          description: 액세스 토큰
+        refreshToken:
+          type: string
+          description: 리프레시 토큰
+        expiresIn:
+          type: integer
+          description: 만료 시간 (초)
+          format: int64
+      description: JWT 토큰 정보
+    SignUpRequest:
+      required:
+      - password
+      - username
+      type: object
+      properties:
+        username:
+          type: string
+          description: 아이디
+        password:
+          type: string
+          description: 패스워드
+        name:
+          type: string
+          description: 이름
+      description: 회원가입 요청
+    SignInRequest:
+      required:
+      - password
+      - username
+      type: object
+      properties:
+        username:
+          type: string
+          description: 아이디
+        password:
+          type: string
+          description: 패스워드
+      description: 로그인 요청
+    PushSubscriptionRequest:
+      required:
+      - endpoint
+      type: object
+      properties:
+        endpoint:
+          type: string
+          description: 브라우저 푸시 서비스 주소
+        p256dh:
+          type: string
+          description: 공개키 (p256dh)
+        auth:
+          type: string
+          description: 인증 토큰 (auth)
+        userAgent:
+          type: string
+          description: 사용자 에이전트 정보
+        deviceName:
+          type: string
+          description: 기기 명칭
+      description: 웹 푸시 구독 등록 요청
+    PushSubscriptionResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: 식별자
+        userId:
+          type: string
+          description: 계정 식별자
+        endpoint:
+          type: string
+          description: 브라우저 푸시 서비스 주소
+        p256dh:
+          type: string
+          description: 공개키 (p256dh)
+        auth:
+          type: string
+          description: 인증 토큰 (auth)
+        userAgent:
+          type: string
+          description: 사용자 에이전트 정보
+        deviceName:
+          type: string
+          description: 기기 명칭
+        createdDate:
+          type: string
+          description: 생성일시
+          format: date-time
+      description: 웹 푸시 구독 정보 응답
+    FriendRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          description: 친구 계정명
+      description: 친구 요청
+    MessageResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: 메시지 식별자
+        chatRoomId:
+          type: string
+          description: 채팅방 식별자
+        content:
+          type: string
+          description: 메시지 내용
+        type:
+          type: string
+          description: 메시지 타입
+          enum:
+          - CHAT
+          - NOTIFICATION
+        mimeType:
+          type: string
+          description: MIME 타입
+        createdDate:
+          type: string
+          description: 생성일시
+          format: date-time
+        sender:
+          $ref: "#/components/schemas/SenderResponse"
+      description: 메시지 응답
+    PageMetadata:
+      type: object
+      properties:
+        size:
+          type: integer
+          format: int64
+        number:
+          type: integer
+          format: int64
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int64
+    PagedModelMessageResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/MessageResponse"
+        page:
+          $ref: "#/components/schemas/PageMetadata"
+    SenderResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: 발신자 식별자
+        name:
+          type: string
+          description: 발신자 이름
+      description: 발신자 정보
+    FriendResponse:
+      type: object
+      properties:
+        userId:
+          type: string
+          description: 내 식별자
+        friend:
+          $ref: "#/components/schemas/UserResponse"
+        status:
+          type: string
+          description: 친구 상태
+          enum:
+          - PENDING
+          - ACCEPTED
+          - BLOCKED
+      description: 친구 정보 응답
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: 식별자
+        username:
+          type: string
+          description: 계정명
+        name:
+          type: string
+          description: 이름
+      description: 사용자 정보 응답
+    ChatRoomResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: 채팅방 식별자
+        name:
+          type: string
+          description: 채팅방 이름
+      description: 채팅방 응답
+  securitySchemes:
+    Bearer Authentication:
+      type: http
+      description: JWT 토큰을 입력하세요. 'Bearer ' 접두사는 자동으로 추가됩니다.
+      scheme: bearer
+      bearerFormat: JWT
