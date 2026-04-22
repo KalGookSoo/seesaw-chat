@@ -11,8 +11,7 @@ import {
 import { useLocalSearchParams, Stack } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { chatService } from '@/services/mock-api';
-import { mockCurrentUser } from '@/services/mock-data';
+import { chatService } from '@/services/api';
 import type { MessageResponse } from '@/services/mock-data';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 
@@ -21,9 +20,12 @@ export default function ChatDetailScreen() {
   const [messages, setMessages] = useState<MessageResponse[]>([]);
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
     loadMessages();
+    // 현재 사용자 ID는 JWT 파싱 또는 /api/me API로 가져와야 합니다.
+    // 현재 스펙에 /api/me가 없으므로 백엔드 추가 후 구현 필요
   }, [id]);
 
   const loadMessages = async () => {
@@ -45,8 +47,22 @@ export default function ChatDetailScreen() {
     setLoading(true);
 
     try {
-      const newMessage = await chatService.sendMessage(id, messageText);
-      setMessages((prev) => [...prev, newMessage]);
+      // TODO: WebSocket(STOMP) 메시지 전송으로 교체 필요
+      // chatService.sendMessage는 현재 WebSocket 구현이 필요합니다.
+      // 임시로 UI에만 낙관적 업데이트 적용
+      const optimisticMessage: MessageResponse = {
+        id: `local-${Date.now()}`,
+        chatRoomId: id,
+        content: messageText,
+        type: 'CHAT',
+        mimeType: 'text/plain',
+        createdDate: new Date().toISOString(),
+        sender: {
+          id: currentUserId ?? 'me',
+          name: '나',
+        },
+      };
+      setMessages((prev) => [...prev, optimisticMessage]);
     } catch (error) {
       console.error('Failed to send message:', error);
       setInputText(messageText);
@@ -65,7 +81,7 @@ export default function ChatDetailScreen() {
   };
 
   const renderMessage = ({ item, index }: { item: MessageResponse; index: number }) => {
-    const isMyMessage = item.sender.id === mockCurrentUser.id;
+    const isMyMessage = item.sender.id === currentUserId;
     const prevMessage = index > 0 ? messages[index - 1] : null;
     const showSender =
       !prevMessage || prevMessage.sender.id !== item.sender.id || !isMyMessage;

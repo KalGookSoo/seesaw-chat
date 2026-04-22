@@ -3,7 +3,7 @@ import { View, TextInput, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Pl
 import { router } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { authService } from '@/services/mock-api';
+import { authService } from '@/services/api';
 
 export default function SignupScreen() {
   const [username, setUsername] = useState('');

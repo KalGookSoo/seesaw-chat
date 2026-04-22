@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, RefreshControl } from 'react-native';
 import { router } from 'expo-router';
-import { chatService } from '@/services/mock-api';
+import { chatService } from '@/services/api';
 import type { ChatRoomExtended } from '@/services/mock-data';
 import { colors, spacing, borderRadius, fontSize, fontWeight, shadows } from '@/constants/design';
 

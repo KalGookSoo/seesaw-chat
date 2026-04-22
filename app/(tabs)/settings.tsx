@@ -1,14 +1,20 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Switch, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { mockCurrentUser } from '@/services/mock-data';
-import { pushService } from '@/services/mock-api';
+import { authService, pushService } from '@/services/api';
 
 export default function SettingsScreen() {
   const [pushEnabled, setPushEnabled] = useState(true);
+  const [currentUser, setCurrentUser] = useState({ name: '', username: '' });
+
+  useEffect(() => {
+    // 현재 로그인한 사용자 정보는 JWT 토큰 파싱 또는 별도 /api/me 엔드포인트로 가져와야 합니다.
+    // 현재 API 스펙에 /api/me가 없으므로 토큰에서 파싱하거나 로그인 시 저장한 정보를 사용합니다.
+    // 임시로 빈 값 표시 (백엔드 /api/me 추가 후 실제 구현 필요)
+  }, []);
 
   const handlePushToggle = async (value: boolean) => {
     try {
@@ -39,8 +45,9 @@ export default function SettingsScreen() {
       {
         text: '로그아웃',
         style: 'destructive',
-        onPress: () => {
-          router.replace('/auth/login');
+        onPress: async () => {
+          await authService.logout();
+          router.replace('/');
         },
       },
     ]);
@@ -55,11 +62,11 @@ export default function SettingsScreen() {
       <View style={styles.content}>
         <View style={styles.profileSection}>
           <View style={styles.avatar}>
-            <ThemedText style={styles.avatarText}>{mockCurrentUser.name[0]}</ThemedText>
+            <ThemedText style={styles.avatarText}>{currentUser.name ? currentUser.name[0] : '?'}</ThemedText>
           </View>
           <View style={styles.profileInfo}>
-            <ThemedText style={styles.profileName}>{mockCurrentUser.name}</ThemedText>
-            <ThemedText style={styles.profileUsername}>@{mockCurrentUser.username}</ThemedText>
+            <ThemedText style={styles.profileName}>{currentUser.name || '사용자'}</ThemedText>
+            <ThemedText style={styles.profileUsername}>@{currentUser.username || '-'}</ThemedText>
           </View>
         </View>
 

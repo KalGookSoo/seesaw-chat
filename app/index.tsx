@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { router } from 'expo-router';
-import { authService } from '@/services/mock-api';
+import { authService } from '@/services/api';
 import { borderRadius, colors, fontSize, fontWeight, shadows, spacing } from '@/constants/design';
 
 export default function LoginScreen() {
@@ -18,7 +18,7 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       await authService.login(username, password);
-      router.replace('/(tabs)');
+      router.replace('/(tabs)/chats');
     } catch (error) {
       console.error('Login error:', error);
       Alert.alert('로그인 실패', '아이디 또는 비밀번호가 올바르지 않습니다.');

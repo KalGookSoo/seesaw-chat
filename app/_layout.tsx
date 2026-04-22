@@ -6,7 +6,8 @@ import 'react-native-reanimated';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export const unstable_settings = {
-  initialRouteName: 'auth/login',
+  // 네이티브 앱 딥링크 미적용 시 초기 화면 (웹에서는 URL로 결정되므로 무관)
+  initialRouteName: 'index',
 };
 
 export default function RootLayout() {
@@ -15,10 +16,14 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
-        <Stack.Screen name="auth/login" options={{ headerShown: false }} />
+        {/* 공개 영역 — 인증 불필요 */}
+        <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="auth/signup" options={{ headerShown: true, title: '회원가입' }} />
+
+        {/* 인증 영역 — 로그인 후 접근 */}
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="chat/[id]" options={{ headerShown: true }} />
+
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
       </Stack>
       <StatusBar style="auto" />

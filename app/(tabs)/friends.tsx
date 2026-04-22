@@ -11,7 +11,7 @@ import {
   TextInput,
   ScrollView,
 } from 'react-native';
-import { friendService } from '@/services/mock-api';
+import { friendService } from '@/services/api';
 import type { FriendResponse, UserResponse } from '@/services/mock-data';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { colors, spacing, borderRadius, fontSize, fontWeight, shadows } from '@/constants/design';
@@ -181,7 +181,11 @@ export default function FriendsScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.content}
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
+      >
         {/* Pending Requests */}
         {pendingRequests.length > 0 && (
           <View style={styles.section}>
@@ -207,13 +211,9 @@ export default function FriendsScreen() {
               <Text style={styles.emptySubtitle}>친구를 추가하여 채팅을 시작해보세요!</Text>
             </View>
           ) : (
-            <FlatList
-              data={friends}
-              renderItem={renderFriendItem}
-              keyExtractor={(item) => item.friend.id}
-              scrollEnabled={false}
-              refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
-            />
+            friends.map((item) => (
+              <View key={item.friend.id}>{renderFriendItem({ item })}</View>
+            ))
           )}
         </View>
       </ScrollView>
