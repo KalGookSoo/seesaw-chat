@@ -306,24 +306,8 @@ paths:
       tags:
       - 친구 API
       summary: 친구 목록 조회
-      description: 수락된 친구 목록을 조회합니다.
+      description: 친구 목록을 조회합니다.
       operationId: getFriends
-      responses:
-        "200":
-          description: OK
-          content:
-            '*/*':
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/FriendResponse"
-  /api/friends/pending:
-    get:
-      tags:
-      - 친구 API
-      summary: 대기 중인 요청 조회
-      description: 나에게 온 친구 요청 목록을 조회합니다.
-      operationId: getPendingRequests
       responses:
         "200":
           description: OK

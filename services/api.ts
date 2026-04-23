@@ -53,7 +53,6 @@ export const authService = {
 // ─────────────────────────────────────────────
 // 친구 API
 // GET  /api/friends
-// GET  /api/friends/pending
 // POST /api/friends/request
 // PUT  /api/friends/{friendId}/accept
 // DELETE /api/friends/{friendId}
@@ -61,10 +60,6 @@ export const authService = {
 export const friendService = {
   /** GET /api/friends → FriendResponse[] */
   getFriends: (): Promise<FriendResponse[]> => apiClient.get<FriendResponse[]>('/api/friends'),
-
-  /** GET /api/friends/pending → FriendResponse[] */
-  getPendingRequests: (): Promise<FriendResponse[]> =>
-    apiClient.get<FriendResponse[]>('/api/friends/pending'),
 
   /** POST /api/friends/request — FriendRequest { username } → void */
   sendFriendRequest: (username: string): Promise<void> =>

@@ -1,24 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  FlatList,
-  RefreshControl,
-  Modal,
-  TextInput,
-  ScrollView,
-} from 'react-native';
+import { FlatList, Modal, RefreshControl, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Alert } from '@/services/alert';
-import { friendService, chatService } from '@/services/api';
+import { chatService, friendService } from '@/services/api';
 import type { FriendResponse, UserResponse } from '@/services/mock-data';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { colors, spacing, borderRadius, fontSize, fontWeight, shadows } from '@/constants/design';
+import { borderRadius, colors, fontSize, fontWeight, shadows, spacing } from '@/constants/design';
 
 export default function FriendsScreen() {
   const [friends, setFriends] = useState<FriendResponse[]>([]);
   const [pendingRequests, setPendingRequests] = useState<FriendResponse[]>([]);
+  const [blockedFriends, setBlockedFriends] = useState<FriendResponse[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -36,12 +27,10 @@ export default function FriendsScreen() {
 
   const loadData = async () => {
     try {
-      const [friendsData, pendingData] = await Promise.all([
-        friendService.getFriends(),
-        friendService.getPendingRequests(),
-      ]);
-      setFriends(friendsData);
-      setPendingRequests(pendingData);
+      const friendsData = await friendService.getFriends();
+      setFriends(friendsData.filter((f) => f.status === 'ACCEPTED'));
+      setPendingRequests(friendsData.filter((f) => f.status === 'PENDING'));
+      setBlockedFriends(friendsData.filter((f) => f.status === 'BLOCKED'));
     } catch (error: any) {
       Alert.handleApiError(error, '데이터 로드 실패');
     }
@@ -124,9 +113,7 @@ export default function FriendsScreen() {
   };
 
   const toggleFriendSelection = (friendId: string) => {
-    setSelectedFriends((prev) =>
-      prev.includes(friendId) ? prev.filter((id) => id !== friendId) : [...prev, friendId],
-    );
+    setSelectedFriends((prev) => (prev.includes(friendId) ? prev.filter((id) => id !== friendId) : [...prev, friendId]));
   };
 
   const handleCreateChatRoom = async () => {
@@ -153,10 +140,7 @@ export default function FriendsScreen() {
 
   const renderFriendItem = ({ item }: { item: FriendResponse }) => (
     <TouchableOpacity
-      style={[
-        styles.friendCard,
-        isCreateChatMode && selectedFriends.includes(item.friend.id) && styles.selectedFriendCard,
-      ]}
+      style={[styles.friendCard, isCreateChatMode && selectedFriends.includes(item.friend.id) && styles.selectedFriendCard]}
       onPress={() => {
         if (isCreateChatMode) {
           toggleFriendSelection(item.friend.id);
@@ -173,15 +157,8 @@ export default function FriendsScreen() {
         <Text style={styles.friendUsername}>@{item.friend.username}</Text>
       </View>
       {isCreateChatMode ? (
-        <View
-          style={[
-            styles.checkbox,
-            selectedFriends.includes(item.friend.id) && styles.checkboxSelected,
-          ]}
-        >
-          {selectedFriends.includes(item.friend.id) && (
-            <IconSymbol name="checkmark" size={14} color="#fff" />
-          )}
+        <View style={[styles.checkbox, selectedFriends.includes(item.friend.id) && styles.checkboxSelected]}>
+          {selectedFriends.includes(item.friend.id) && <IconSymbol name="checkmark" size={14} color="#fff" />}
         </View>
       ) : (
         <View style={styles.statusBadge}>
@@ -192,39 +169,42 @@ export default function FriendsScreen() {
   );
 
   const renderPendingItem = ({ item }: { item: FriendResponse }) => (
-    <View style={styles.pendingCard}>
+    <TouchableOpacity style={styles.pendingCard} onPress={() => handleShowDetail(item.friend.id)} activeOpacity={0.7}>
       <View style={styles.avatar}>
         <Text style={styles.avatarText}>{item.friend.name[0]}</Text>
       </View>
       <View style={styles.friendInfo}>
         <Text style={styles.friendName}>{item.friend.name}</Text>
         <Text style={styles.friendUsername}>@{item.friend.username}</Text>
+        <Text style={styles.statusLabel}>수락 대기 중</Text>
       </View>
       <View style={styles.pendingActions}>
         <TouchableOpacity
           style={styles.acceptButton}
-          onPress={() => handleAcceptRequest(item)}
+          onPress={(e) => {
+            e.stopPropagation();
+            handleAcceptRequest(item);
+          }}
           activeOpacity={0.8}
         >
           <IconSymbol name="checkmark" size={16} color="#fff" />
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.rejectButton}
-          onPress={() => handleRejectRequest(item)}
+          onPress={(e) => {
+            e.stopPropagation();
+            handleRejectRequest(item);
+          }}
           activeOpacity={0.8}
         >
           <IconSymbol name="xmark" size={16} color={colors.gray[600]} />
         </TouchableOpacity>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   const renderSearchResult = ({ item }: { item: UserResponse }) => (
-    <TouchableOpacity
-      style={styles.searchResultCard}
-      onPress={() => handleShowDetail(item.id)}
-      activeOpacity={0.7}
-    >
+    <TouchableOpacity style={styles.searchResultCard} onPress={() => handleShowDetail(item.id)} activeOpacity={0.7}>
       <View style={styles.avatar}>
         <Text style={styles.avatarText}>{item.name[0]}</Text>
       </View>
@@ -260,11 +240,7 @@ export default function FriendsScreen() {
               setSelectedFriends([]);
             }}
           >
-            <IconSymbol
-              name={isCreateChatMode ? 'xmark' : 'message'}
-              size={20}
-              color={isCreateChatMode ? colors.gray[600] : colors.primary[600]}
-            />
+            <IconSymbol name={isCreateChatMode ? 'xmark' : 'message'} size={20} color={isCreateChatMode ? colors.gray[600] : colors.primary[600]} />
           </TouchableOpacity>
           <TouchableOpacity style={styles.actionButton} onPress={() => setShowSearchModal(true)}>
             <IconSymbol name="person.badge.plus" size={22} color={colors.primary[600]} />
@@ -275,24 +251,13 @@ export default function FriendsScreen() {
       {isCreateChatMode && (
         <View style={styles.createModeBanner}>
           <Text style={styles.createModeText}>{selectedFriends.length}명 선택됨</Text>
-          <TouchableOpacity
-            style={[
-              styles.createButton,
-              selectedFriends.length === 0 && styles.createButtonDisabled,
-            ]}
-            disabled={selectedFriends.length === 0}
-            onPress={() => setShowCreateModal(true)}
-          >
+          <TouchableOpacity style={[styles.createButton, selectedFriends.length === 0 && styles.createButtonDisabled]} disabled={selectedFriends.length === 0} onPress={() => setShowCreateModal(true)}>
             <Text style={styles.createButtonText}>채팅방 생성</Text>
           </TouchableOpacity>
         </View>
       )}
 
-      <ScrollView
-        style={styles.content}
-        showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
-      >
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}>
         {/* Pending Requests */}
         {pendingRequests.length > 0 && (
           <View style={styles.section}>
@@ -318,11 +283,19 @@ export default function FriendsScreen() {
               <Text style={styles.emptySubtitle}>친구를 추가하여 채팅을 시작해보세요!</Text>
             </View>
           ) : (
-            friends.map((item) => (
-              <View key={item.friend.id}>{renderFriendItem({ item })}</View>
-            ))
+            friends.map((item) => <View key={item.friend.id}>{renderFriendItem({ item })}</View>)
           )}
         </View>
+
+        {/* Blocked List */}
+        {blockedFriends.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>차단된 사용자</Text>
+            {blockedFriends.map((item) => (
+              <View key={item.friend.id}>{renderFriendItem({ item })}</View>
+            ))}
+          </View>
+        )}
       </ScrollView>
 
       {/* Search Modal */}
@@ -376,10 +349,7 @@ export default function FriendsScreen() {
       <Modal visible={showDetailModal} transparent animationType="fade">
         <View style={styles.overlay}>
           <View style={styles.detailCard}>
-            <TouchableOpacity
-              style={styles.detailCloseButton}
-              onPress={() => setShowDetailModal(false)}
-            >
+            <TouchableOpacity style={styles.detailCloseButton} onPress={() => setShowDetailModal(false)}>
               <IconSymbol name="xmark" size={20} color={colors.gray[400]} />
             </TouchableOpacity>
 
@@ -401,9 +371,7 @@ export default function FriendsScreen() {
                   {selectedUser.registeredAt && (
                     <View style={styles.infoItem}>
                       <IconSymbol name="calendar" size={16} color={colors.gray[400]} />
-                      <Text style={styles.infoText}>
-                        가입일: {new Date(selectedUser.registeredAt).toLocaleDateString()}
-                      </Text>
+                      <Text style={styles.infoText}>가입일: {new Date(selectedUser.registeredAt).toLocaleDateString()}</Text>
                     </View>
                   )}
                   {selectedUser.roles && selectedUser.roles.length > 0 && (
@@ -414,10 +382,7 @@ export default function FriendsScreen() {
                   )}
                 </View>
 
-                <TouchableOpacity
-                  style={styles.detailAddButton}
-                  onPress={() => handleSendRequest(selectedUser)}
-                >
+                <TouchableOpacity style={styles.detailAddButton} onPress={() => handleSendRequest(selectedUser)}>
                   <Text style={styles.detailAddButtonText}>친구 추가 요청</Text>
                 </TouchableOpacity>
               </View>
@@ -433,19 +398,10 @@ export default function FriendsScreen() {
             <Text style={styles.modalTitle}>새 채팅방 생성</Text>
             <Text style={styles.modalSubtitle}>{selectedFriends.length}명의 친구 초대됨</Text>
 
-            <TextInput
-              style={styles.roomNameInput}
-              placeholder="채팅방 이름을 입력하세요"
-              value={newChatRoomName}
-              onChangeText={setNewChatRoomName}
-              autoFocus
-            />
+            <TextInput style={styles.roomNameInput} placeholder="채팅방 이름을 입력하세요" value={newChatRoomName} onChangeText={setNewChatRoomName} autoFocus />
 
             <View style={styles.modalActions}>
-              <TouchableOpacity
-                style={styles.cancelButton}
-                onPress={() => setShowCreateModal(false)}
-              >
+              <TouchableOpacity style={styles.cancelButton} onPress={() => setShowCreateModal(false)}>
                 <Text style={styles.cancelButtonText}>취소</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.confirmButton} onPress={handleCreateChatRoom}>
@@ -599,6 +555,11 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
     borderWidth: 1,
     borderColor: colors.primary[200],
+  },
+  statusLabel: {
+    fontSize: fontSize.xs,
+    color: colors.gray[400],
+    marginTop: 2,
   },
   avatar: {
     width: 52,
@@ -894,4 +855,3 @@ const styles = StyleSheet.create({
     fontWeight: fontWeight.bold,
   },
 });
-
