@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert } from '@/services/alert';
 import { router } from 'expo-router';
 import { authService } from '@/services/api';
 import { borderRadius, colors, fontSize, fontWeight, shadows, spacing } from '@/constants/design';
@@ -11,7 +12,7 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     if (!username.trim() || !password.trim()) {
-      Alert.alert('오류', '아이디와 비밀번호를 입력해주세요.');
+      Alert.alert('알림', '아이디와 패스워드를 입력해주세요.');
       return;
     }
 
@@ -19,9 +20,8 @@ export default function LoginScreen() {
     try {
       await authService.login(username, password);
       router.replace('/(tabs)/chats');
-    } catch (error) {
-      console.error('Login error:', error);
-      Alert.alert('로그인 실패', '아이디 또는 비밀번호가 올바르지 않습니다.');
+    } catch (error: any) {
+      Alert.handleApiError(error, '로그인 실패');
     } finally {
       setLoading(false);
     }
@@ -61,10 +61,10 @@ export default function LoginScreen() {
           </View>
 
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>비밀번호</Text>
+            <Text style={styles.label}>패스워드</Text>
             <TextInput
               style={[styles.input, password && styles.inputFilled]}
-              placeholder="비밀번호를 입력하세요"
+              placeholder="패스워드를 입력하세요"
               placeholderTextColor={colors.gray[400]}
               value={password}
               onChangeText={setPassword}

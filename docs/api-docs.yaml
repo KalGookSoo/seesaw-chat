@@ -84,6 +84,12 @@ paths:
       responses:
         "201":
           description: 회원가입 성공
+        "422":
+          description: 유효성 검사 실패
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /api/sign-in:
     post:
       tags:
@@ -110,6 +116,12 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/JsonWebToken"
+        "422":
+          description: 유효성 검사 실패
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /api/push/subscriptions:
     post:
       tags:
@@ -130,6 +142,12 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/PushSubscriptionResponse"
+        "422":
+          description: 유효성 검사 실패
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
     delete:
       tags:
       - 웹 푸시 구독 API
@@ -161,6 +179,12 @@ paths:
       responses:
         "200":
           description: OK
+        "422":
+          description: 유효성 검사 실패
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /api/messages:
     get:
       tags:
@@ -476,6 +500,31 @@ components:
           type: string
           description: 채팅방 이름
       description: 채팅방 응답
+    ValidationError:
+      type: object
+      properties:
+        code:
+          type: string
+          description: 오류 코드
+        message:
+          type: string
+          description: 오류 메시지
+        field:
+          type: string
+          description: 오류 발생 필드
+        rejectedValue:
+          type: object
+          description: 거절된 값
+      description: 유효성 검사 오류 정보
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        errors:
+          type: array
+          items:
+            $ref: "#/components/schemas/ValidationError"
   securitySchemes:
     Bearer Authentication:
       type: http

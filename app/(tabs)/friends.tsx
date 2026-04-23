@@ -6,11 +6,11 @@ import {
   TouchableOpacity,
   FlatList,
   RefreshControl,
-  Alert,
   Modal,
   TextInput,
   ScrollView,
 } from 'react-native';
+import { Alert } from '@/services/alert';
 import { friendService } from '@/services/api';
 import type { FriendResponse, UserResponse } from '@/services/mock-data';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -36,8 +36,8 @@ export default function FriendsScreen() {
       ]);
       setFriends(friendsData);
       setPendingRequests(pendingData);
-    } catch (error) {
-      Alert.alert('오류', '데이터를 불러오는데 실패했습니다.');
+    } catch (error: any) {
+      Alert.handleApiError(error, '데이터 로드 실패');
     }
   };
 
@@ -52,8 +52,8 @@ export default function FriendsScreen() {
       await friendService.acceptFriendRequest(friend.friend.id);
       Alert.alert('성공', '친구 요청을 수락했습니다.');
       await loadData();
-    } catch (error) {
-      Alert.alert('오류', '친구 요청 수락에 실패했습니다.');
+    } catch (error: any) {
+      Alert.handleApiError(error, '요청 수락 실패');
     }
   };
 
@@ -61,8 +61,8 @@ export default function FriendsScreen() {
     try {
       await friendService.rejectFriendRequest(friend.friend.id);
       await loadData();
-    } catch (error) {
-      Alert.alert('오류', '친구 요청 거절에 실패했습니다.');
+    } catch (error: any) {
+      Alert.handleApiError(error, '요청 거절 실패');
     }
   };
 
@@ -76,8 +76,8 @@ export default function FriendsScreen() {
           try {
             await friendService.removeFriend(friend.friend.id);
             await loadData();
-          } catch (error) {
-            Alert.alert('오류', '친구 삭제에 실패했습니다.');
+          } catch (error: any) {
+            Alert.handleApiError(error, '친구 삭제 실패');
           }
         },
       },
@@ -89,8 +89,8 @@ export default function FriendsScreen() {
     try {
       const results = await friendService.searchUsers(searchQuery);
       setSearchResults(results);
-    } catch (error) {
-      Alert.alert('오류', '검색에 실패했습니다.');
+    } catch (error: any) {
+      Alert.handleApiError(error, '사용자 검색 실패');
     }
   };
 
@@ -101,8 +101,8 @@ export default function FriendsScreen() {
       setShowSearchModal(false);
       setSearchQuery('');
       setSearchResults([]);
-    } catch (error) {
-      Alert.alert('오류', '친구 요청에 실패했습니다.');
+    } catch (error: any) {
+      Alert.handleApiError(error, '친구 요청 실패');
     }
   };
 

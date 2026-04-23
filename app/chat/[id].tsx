@@ -8,6 +8,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { Alert } from '@/services/alert';
 import { useLocalSearchParams, Stack } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -33,8 +34,12 @@ export default function ChatDetailScreen() {
       try {
         const response = await chatService.getMessages(id);
         setMessages(response.content);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to load messages:', error);
+        const isNetworkError = error.message?.includes('fetch') || error.name === 'TypeError';
+        if (isNetworkError) {
+          Alert.alert('연결 오류', '서버에서 메시지를 불러올 수 없습니다.');
+        }
       }
     }
   };

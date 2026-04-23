@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, TextInput, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform, Alert, ScrollView } from 'react-native';
+import { View, TextInput, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { Alert } from '@/services/alert';
 import { router } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -14,17 +15,17 @@ export default function SignupScreen() {
 
   const handleSignup = async () => {
     if (!username.trim() || !password.trim() || !name.trim()) {
-      Alert.alert('오류', '모든 필드를 입력해주세요.');
+      Alert.alert('알림', '모든 필드를 입력해주세요.');
       return;
     }
 
     if (password !== confirmPassword) {
-      Alert.alert('오류', '비밀번호가 일치하지 않습니다.');
+      Alert.alert('알림', '패스워드가 일치하지 않습니다.');
       return;
     }
 
     if (password.length < 6) {
-      Alert.alert('오류', '비밀번호는 최소 6자 이상이어야 합니다.');
+      Alert.alert('알림', '패스워드는 최소 6자 이상이어야 합니다.');
       return;
     }
 
@@ -37,8 +38,8 @@ export default function SignupScreen() {
           onPress: () => router.back(),
         },
       ]);
-    } catch (error) {
-      Alert.alert('회원가입 실패', '다시 시도해주세요.');
+    } catch (error: any) {
+      Alert.handleApiError(error, '회원가입 실패');
     } finally {
       setLoading(false);
     }
@@ -84,10 +85,10 @@ export default function SignupScreen() {
             </View>
 
             <View style={styles.inputGroup}>
-              <ThemedText style={styles.label}>비밀번호</ThemedText>
+              <ThemedText style={styles.label}>패스워드</ThemedText>
               <TextInput
                 style={styles.input}
-                placeholder="비밀번호를 입력하세요 (최소 6자)"
+                placeholder="패스워드를 입력하세요 (최소 6자)"
                 placeholderTextColor="#999"
                 value={password}
                 onChangeText={setPassword}
@@ -97,10 +98,10 @@ export default function SignupScreen() {
             </View>
 
             <View style={styles.inputGroup}>
-              <ThemedText style={styles.label}>비밀번호 확인</ThemedText>
+              <ThemedText style={styles.label}>패스워드 확인</ThemedText>
               <TextInput
                 style={styles.input}
-                placeholder="비밀번호를 다시 입력하세요"
+                placeholder="패스워드를 다시 입력하세요"
                 placeholderTextColor="#999"
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}

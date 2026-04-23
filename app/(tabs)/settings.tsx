@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Switch, Alert } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Switch } from 'react-native';
+import { Alert } from '@/services/alert';
 import { router } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -115,9 +116,9 @@ export default function SettingsScreen() {
             <View style={styles.settingInfo}>
               <IconSymbol name="lock.fill" size={20} color="#007AFF" style={styles.settingIcon} />
               <View>
-                <ThemedText style={styles.settingLabel}>비밀번호 변경</ThemedText>
+                <ThemedText style={styles.settingLabel}>패스워드 변경</ThemedText>
                 <ThemedText style={styles.settingDescription}>
-                  계정 비밀번호를 변경합니다
+                  계정 패스워드를 변경합니다
                 </ThemedText>
               </View>
             </View>
