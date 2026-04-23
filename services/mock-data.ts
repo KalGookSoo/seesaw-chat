@@ -9,7 +9,24 @@ export interface UserResponse {
   id: string;
   username: string;
   name: string;
+  registeredAt?: string;
+  contactNumber?: string;
+  expiredDate?: string;
+  lockedDate?: string;
+  credentialsExpiredDate?: string;
+  roles?: string[];
 }
+
+export interface ChatRoomCreateRequest {
+  name: string;
+  friendIds?: string[];
+}
+
+export interface UserSearch {
+  username?: string;
+  name?: string;
+}
+
 
 export interface SenderResponse {
   id: string;

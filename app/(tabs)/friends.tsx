@@ -11,7 +11,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { Alert } from '@/services/alert';
-import { friendService } from '@/services/api';
+import { friendService, chatService } from '@/services/api';
 import type { FriendResponse, UserResponse } from '@/services/mock-data';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { colors, spacing, borderRadius, fontSize, fontWeight, shadows } from '@/constants/design';
@@ -23,6 +23,12 @@ export default function FriendsScreen() {
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<UserResponse[]>([]);
+  const [selectedUser, setSelectedUser] = useState<UserResponse | null>(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [isCreateChatMode, setIsCreateChatMode] = useState(false);
+  const [selectedFriends, setSelectedFriends] = useState<string[]>([]);
+  const [newChatRoomName, setNewChatRoomName] = useState('');
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -99,6 +105,7 @@ export default function FriendsScreen() {
       await friendService.sendFriendRequest(user.username);
       Alert.alert('성공', `${user.name}님에게 친구 요청을 보냈습니다.`);
       setShowSearchModal(false);
+      setShowDetailModal(false);
       setSearchQuery('');
       setSearchResults([]);
     } catch (error: any) {
@@ -106,10 +113,56 @@ export default function FriendsScreen() {
     }
   };
 
+  const handleShowDetail = async (userId: string) => {
+    try {
+      const userDetail = await friendService.getUserDetail(userId);
+      setSelectedUser(userDetail);
+      setShowDetailModal(true);
+    } catch (error: any) {
+      Alert.handleApiError(error, '사용자 정보 로드 실패');
+    }
+  };
+
+  const toggleFriendSelection = (friendId: string) => {
+    setSelectedFriends((prev) =>
+      prev.includes(friendId) ? prev.filter((id) => id !== friendId) : [...prev, friendId],
+    );
+  };
+
+  const handleCreateChatRoom = async () => {
+    if (!newChatRoomName.trim()) {
+      Alert.alert('알림', '채팅방 이름을 입력해주세요.');
+      return;
+    }
+    if (selectedFriends.length === 0) {
+      Alert.alert('알림', '초대할 친구를 선택해주세요.');
+      return;
+    }
+
+    try {
+      await chatService.createChatRoom(newChatRoomName, selectedFriends);
+      Alert.alert('성공', '채팅방이 생성되었습니다.');
+      setShowCreateModal(false);
+      setIsCreateChatMode(false);
+      setSelectedFriends([]);
+      setNewChatRoomName('');
+    } catch (error: any) {
+      Alert.handleApiError(error, '채팅방 생성 실패');
+    }
+  };
+
   const renderFriendItem = ({ item }: { item: FriendResponse }) => (
     <TouchableOpacity
-      style={styles.friendCard}
-      onLongPress={() => handleRemoveFriend(item)}
+      style={[
+        styles.friendCard,
+        isCreateChatMode && selectedFriends.includes(item.friend.id) && styles.selectedFriendCard,
+      ]}
+      onPress={() => {
+        if (isCreateChatMode) {
+          toggleFriendSelection(item.friend.id);
+        }
+      }}
+      onLongPress={() => !isCreateChatMode && handleRemoveFriend(item)}
       activeOpacity={0.7}
     >
       <View style={styles.avatar}>
@@ -119,9 +172,22 @@ export default function FriendsScreen() {
         <Text style={styles.friendName}>{item.friend.name}</Text>
         <Text style={styles.friendUsername}>@{item.friend.username}</Text>
       </View>
-      <View style={styles.statusBadge}>
-        <View style={styles.onlineDot} />
-      </View>
+      {isCreateChatMode ? (
+        <View
+          style={[
+            styles.checkbox,
+            selectedFriends.includes(item.friend.id) && styles.checkboxSelected,
+          ]}
+        >
+          {selectedFriends.includes(item.friend.id) && (
+            <IconSymbol name="checkmark" size={14} color="#fff" />
+          )}
+        </View>
+      ) : (
+        <View style={styles.statusBadge}>
+          <View style={styles.onlineDot} />
+        </View>
+      )}
     </TouchableOpacity>
   );
 
@@ -154,7 +220,11 @@ export default function FriendsScreen() {
   );
 
   const renderSearchResult = ({ item }: { item: UserResponse }) => (
-    <View style={styles.searchResultCard}>
+    <TouchableOpacity
+      style={styles.searchResultCard}
+      onPress={() => handleShowDetail(item.id)}
+      activeOpacity={0.7}
+    >
       <View style={styles.avatar}>
         <Text style={styles.avatarText}>{item.name[0]}</Text>
       </View>
@@ -162,10 +232,16 @@ export default function FriendsScreen() {
         <Text style={styles.friendName}>{item.name}</Text>
         <Text style={styles.friendUsername}>@{item.username}</Text>
       </View>
-      <TouchableOpacity style={styles.addButton} onPress={() => handleSendRequest(item)}>
+      <TouchableOpacity
+        style={styles.addButton}
+        onPress={(e) => {
+          e.stopPropagation();
+          handleSendRequest(item);
+        }}
+      >
         <IconSymbol name="plus" size={20} color={colors.primary[600]} />
       </TouchableOpacity>
-    </View>
+    </TouchableOpacity>
   );
 
   return (
@@ -176,10 +252,41 @@ export default function FriendsScreen() {
           <Text style={styles.headerTitle}>친구</Text>
           <Text style={styles.headerSubtitle}>{friends.length}명의 친구</Text>
         </View>
-        <TouchableOpacity style={styles.addFriendButton} onPress={() => setShowSearchModal(true)}>
-          <IconSymbol name="person.badge.plus" size={22} color={colors.primary[600]} />
-        </TouchableOpacity>
+        <View style={styles.headerActions}>
+          <TouchableOpacity
+            style={[styles.actionButton, isCreateChatMode && styles.activeActionButton]}
+            onPress={() => {
+              setIsCreateChatMode(!isCreateChatMode);
+              setSelectedFriends([]);
+            }}
+          >
+            <IconSymbol
+              name={isCreateChatMode ? 'xmark' : 'message'}
+              size={20}
+              color={isCreateChatMode ? colors.gray[600] : colors.primary[600]}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.actionButton} onPress={() => setShowSearchModal(true)}>
+            <IconSymbol name="person.badge.plus" size={22} color={colors.primary[600]} />
+          </TouchableOpacity>
+        </View>
       </View>
+
+      {isCreateChatMode && (
+        <View style={styles.createModeBanner}>
+          <Text style={styles.createModeText}>{selectedFriends.length}명 선택됨</Text>
+          <TouchableOpacity
+            style={[
+              styles.createButton,
+              selectedFriends.length === 0 && styles.createButtonDisabled,
+            ]}
+            disabled={selectedFriends.length === 0}
+            onPress={() => setShowCreateModal(true)}
+          >
+            <Text style={styles.createButtonText}>채팅방 생성</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       <ScrollView
         style={styles.content}
@@ -264,6 +371,90 @@ export default function FriendsScreen() {
           />
         </View>
       </Modal>
+
+      {/* User Detail Modal */}
+      <Modal visible={showDetailModal} transparent animationType="fade">
+        <View style={styles.overlay}>
+          <View style={styles.detailCard}>
+            <TouchableOpacity
+              style={styles.detailCloseButton}
+              onPress={() => setShowDetailModal(false)}
+            >
+              <IconSymbol name="xmark" size={20} color={colors.gray[400]} />
+            </TouchableOpacity>
+
+            {selectedUser && (
+              <View style={styles.detailContent}>
+                <View style={styles.detailAvatar}>
+                  <Text style={styles.detailAvatarText}>{selectedUser.name[0]}</Text>
+                </View>
+                <Text style={styles.detailName}>{selectedUser.name}</Text>
+                <Text style={styles.detailUsername}>@{selectedUser.username}</Text>
+
+                <View style={styles.detailInfoList}>
+                  {selectedUser.contactNumber && (
+                    <View style={styles.infoItem}>
+                      <IconSymbol name="phone" size={16} color={colors.gray[400]} />
+                      <Text style={styles.infoText}>{selectedUser.contactNumber}</Text>
+                    </View>
+                  )}
+                  {selectedUser.registeredAt && (
+                    <View style={styles.infoItem}>
+                      <IconSymbol name="calendar" size={16} color={colors.gray[400]} />
+                      <Text style={styles.infoText}>
+                        가입일: {new Date(selectedUser.registeredAt).toLocaleDateString()}
+                      </Text>
+                    </View>
+                  )}
+                  {selectedUser.roles && selectedUser.roles.length > 0 && (
+                    <View style={styles.infoItem}>
+                      <IconSymbol name="shield" size={16} color={colors.gray[400]} />
+                      <Text style={styles.infoText}>권한: {selectedUser.roles.join(', ')}</Text>
+                    </View>
+                  )}
+                </View>
+
+                <TouchableOpacity
+                  style={styles.detailAddButton}
+                  onPress={() => handleSendRequest(selectedUser)}
+                >
+                  <Text style={styles.detailAddButtonText}>친구 추가 요청</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+        </View>
+      </Modal>
+
+      {/* Create Chat Room Modal */}
+      <Modal visible={showCreateModal} transparent animationType="slide">
+        <View style={styles.overlay}>
+          <View style={styles.createRoomCard}>
+            <Text style={styles.modalTitle}>새 채팅방 생성</Text>
+            <Text style={styles.modalSubtitle}>{selectedFriends.length}명의 친구 초대됨</Text>
+
+            <TextInput
+              style={styles.roomNameInput}
+              placeholder="채팅방 이름을 입력하세요"
+              value={newChatRoomName}
+              onChangeText={setNewChatRoomName}
+              autoFocus
+            />
+
+            <View style={styles.modalActions}>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => setShowCreateModal(false)}
+              >
+                <Text style={styles.cancelButtonText}>취소</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.confirmButton} onPress={handleCreateChatRoom}>
+                <Text style={styles.confirmButtonText}>생성하기</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -299,6 +490,48 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary[50],
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  headerActions: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  actionButton: {
+    width: 44,
+    height: 44,
+    borderRadius: borderRadius.xl,
+    backgroundColor: colors.primary[50],
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  activeActionButton: {
+    backgroundColor: colors.gray[200],
+  },
+  createModeBanner: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    backgroundColor: colors.primary[600],
+  },
+  createModeText: {
+    color: '#fff',
+    fontSize: fontSize.base,
+    fontWeight: fontWeight.semibold,
+  },
+  createButton: {
+    backgroundColor: '#fff',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.lg,
+  },
+  createButtonDisabled: {
+    opacity: 0.5,
+  },
+  createButtonText: {
+    color: colors.primary[600],
+    fontSize: fontSize.sm,
+    fontWeight: fontWeight.bold,
   },
   content: {
     flex: 1,
@@ -339,6 +572,23 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     marginBottom: spacing.sm,
     ...shadows.sm,
+  },
+  selectedFriendCard: {
+    borderColor: colors.primary[600],
+    borderWidth: 1,
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: borderRadius.md,
+    borderWidth: 2,
+    borderColor: colors.gray[300],
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkboxSelected: {
+    backgroundColor: colors.primary[600],
+    borderColor: colors.primary[600],
   },
   pendingCard: {
     flexDirection: 'row',
@@ -445,6 +695,11 @@ const styles = StyleSheet.create({
     fontWeight: fontWeight.bold,
     color: colors.gray[900],
   },
+  modalSubtitle: {
+    fontSize: fontSize.sm,
+    color: colors.gray[500],
+    marginBottom: spacing.lg,
+  },
   closeButton: {
     width: 40,
     height: 40,
@@ -513,4 +768,130 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: spacing.xl,
+  },
+  detailCard: {
+    width: '100%',
+    backgroundColor: '#fff',
+    borderRadius: borderRadius['2xl'],
+    padding: spacing.xl,
+    alignItems: 'center',
+  },
+  detailCloseButton: {
+    position: 'absolute',
+    top: spacing.md,
+    right: spacing.md,
+    width: 32,
+    height: 32,
+    borderRadius: borderRadius.full,
+    backgroundColor: colors.gray[100],
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  detailContent: {
+    width: '100%',
+    alignItems: 'center',
+  },
+  detailAvatar: {
+    width: 80,
+    height: 80,
+    borderRadius: borderRadius.full,
+    backgroundColor: colors.primary[600],
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
+  detailAvatarText: {
+    color: '#fff',
+    fontSize: fontSize['3xl'],
+    fontWeight: fontWeight.bold,
+  },
+  detailName: {
+    fontSize: fontSize['2xl'],
+    fontWeight: fontWeight.bold,
+    color: colors.gray[900],
+    marginBottom: 4,
+  },
+  detailUsername: {
+    fontSize: fontSize.base,
+    color: colors.gray[500],
+    marginBottom: spacing.xl,
+  },
+  detailInfoList: {
+    width: '100%',
+    gap: spacing.sm,
+    marginBottom: spacing['2xl'],
+  },
+  infoItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  infoText: {
+    fontSize: fontSize.sm,
+    color: colors.gray[600],
+  },
+  detailAddButton: {
+    width: '100%',
+    height: 52,
+    backgroundColor: colors.primary[600],
+    borderRadius: borderRadius.xl,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  detailAddButtonText: {
+    color: '#fff',
+    fontSize: fontSize.base,
+    fontWeight: fontWeight.bold,
+  },
+  createRoomCard: {
+    width: '100%',
+    backgroundColor: '#fff',
+    borderRadius: borderRadius['2xl'],
+    padding: spacing.xl,
+  },
+  roomNameInput: {
+    height: 52,
+    backgroundColor: colors.gray[100],
+    borderRadius: borderRadius.xl,
+    paddingHorizontal: spacing.md,
+    fontSize: fontSize.base,
+    marginBottom: spacing.xl,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    gap: spacing.md,
+  },
+  cancelButton: {
+    flex: 1,
+    height: 52,
+    borderRadius: borderRadius.xl,
+    backgroundColor: colors.gray[100],
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cancelButtonText: {
+    fontSize: fontSize.base,
+    color: colors.gray[600],
+    fontWeight: fontWeight.semibold,
+  },
+  confirmButton: {
+    flex: 2,
+    height: 52,
+    borderRadius: borderRadius.xl,
+    backgroundColor: colors.primary[600],
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  confirmButtonText: {
+    fontSize: fontSize.base,
+    color: '#fff',
+    fontWeight: fontWeight.bold,
+  },
 });
+

@@ -122,12 +122,6 @@ export async function request<T = void>(
       return undefined as T;
     }
 
-    // 401 Unauthorized 처리 (갱신 실패 등)
-    if (response.status === 401 && !skipAuth) {
-      await tokenStorage.clearTokens();
-      throw new ApiError(401, '인증이 필요합니다. 다시 로그인해주세요.');
-    }
-
     let body: any;
     const contentType = response.headers.get('content-type') ?? '';
     if (contentType.includes('application/json')) {
@@ -137,6 +131,32 @@ export async function request<T = void>(
     }
 
     if (!response.ok) {
+      // 401 Unauthorized인 경우 토큰 갱신 후 1회 재시도
+      if (response.status === 401 && !skipAuth) {
+        if (isRefreshing) {
+          const newToken = await new Promise<string>((resolve) => {
+            subscribeTokenRefresh(resolve);
+          });
+          if (newToken) {
+            return request<T>(path, options);
+          }
+        } else {
+          isRefreshing = true;
+          try {
+            const newToken = await performTokenRefresh(controller.signal);
+            if (newToken) {
+              onRefreshDone(newToken);
+              return request<T>(path, options);
+            }
+          } finally {
+            isRefreshing = false;
+          }
+        }
+        // 갱신 실패 시 토큰 삭제 및 에러 발생
+        await tokenStorage.clearTokens();
+        throw new ApiError(401, '세션이 만료되었습니다. 다시 로그인해주세요.', body);
+      }
+
       throw new ApiError(response.status, `API 오류: ${response.status}`, body);
     }
 

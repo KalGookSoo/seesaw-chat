@@ -82,17 +82,17 @@ export const friendService = {
     apiClient.delete<void>(`/api/friends/${friendId}`),
 
   /**
-   * 사용자 검색 — API 스펙에 별도 엔드포인트가 없으므로
-   * 친구 요청을 위해 username으로 직접 찾는 방식을 사용합니다.
-   * 백엔드에 사용자 검색 API가 추가되면 이 메서드를 수정하세요.
+   * GET /api/users?username=...&name=... — UserSearch → UserResponse[]
+   * 친구 추가를 위해 사용자를 검색합니다. (아이디 또는 이름으로 검색)
    */
-  searchUsers: async (query: string): Promise<UserResponse[]> => {
-    // 현재 API 스펙에 사용자 검색 엔드포인트가 없으므로
-    // 친구 목록에서 필터링하거나 별도 구현이 필요합니다.
-    // 임시로 빈 배열 반환 (백엔드 추가 후 실제 구현 필요)
-    console.warn('[friendService.searchUsers] 사용자 검색 API가 스펙에 없습니다. 백엔드 확인 필요.');
-    return [];
+  searchUsers: (query: string): Promise<UserResponse[]> => {
+    const encodedQuery = encodeURIComponent(query);
+    return apiClient.get<UserResponse[]>(`/api/users?username=${encodedQuery}&name=${encodedQuery}`);
   },
+
+  /** GET /api/users/{userId} → UserResponse */
+  getUserDetail: (userId: string): Promise<UserResponse> =>
+    apiClient.get<UserResponse>(`/api/users/${userId}`),
 };
 
 // ─────────────────────────────────────────────
@@ -102,16 +102,16 @@ export const friendService = {
 // ─────────────────────────────────────────────
 export const chatService = {
   /**
-   * GET /api/chat-rooms → { [key: string]: ChatRoomResponse[] }
-   * API는 그룹화된 객체를 반환하므로, 모든 채팅방을 flat하게 변환합니다.
+   * GET /api/chat-rooms → ChatRoomResponse[]
    */
   getChatRooms: async (): Promise<ChatRoomExtended[]> => {
-    const data = await apiClient.get<Record<string, ChatRoomResponse[]>>('/api/chat-rooms');
-    // API 응답이 { groupKey: ChatRoomResponse[] } 형태이므로 flat하게 변환
-    if (!data) return [];
-    const rooms: ChatRoomExtended[] = Object.values(data).flat();
-    return rooms;
+    const rooms = await apiClient.get<ChatRoomResponse[]>('/api/chat-rooms');
+    return (rooms || []) as ChatRoomExtended[];
   },
+
+  /** POST /api/chat-rooms — ChatRoomCreateRequest → ChatRoomResponse */
+  createChatRoom: (name: string, friendIds: string[]): Promise<ChatRoomResponse> =>
+    apiClient.post<ChatRoomResponse>('/api/chat-rooms', { name, friendIds }),
 
   /** GET /api/messages?chatRoomId=&pageNumber=&pageSize= → PagedModelMessageResponse */
   getMessages: (
