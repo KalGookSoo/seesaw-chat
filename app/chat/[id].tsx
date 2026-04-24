@@ -1,18 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import {
-  Dimensions,
-  FlatList,
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  Pressable,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  View
-} from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Dimensions, FlatList, KeyboardAvoidingView, Modal, Platform, Pressable, SafeAreaView, ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 import { Alert } from '@/services/alert';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
@@ -32,12 +19,13 @@ export default function ChatDetailScreen() {
   const [inputText, setInputText] = useState('');
   const [wsStatus, setWsStatus] = useState<number>(WebSocket.CONNECTING);
   const [isConnectionFailed, setIsConnectionFailed] = useState(false);
-  const [retryCount, setRetryCount] = useState(0);
+  const retryCount = useRef(0);
   const MAX_RETRIES = 5;
   const ws = useRef<WebSocket | null>(null);
   const currentUserId = useRef<string | null>(null);
-  const retryTimerRef = useRef<number | null>(null);
+  const retryTimerRef = useRef<any>(null);
   const flatListRef = useRef<FlatList>(null);
+  const isMounted = useRef(true);
 
   // Drawer & Modals
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -50,15 +38,17 @@ export default function ChatDetailScreen() {
   const [isFavorite, setIsFavorite] = useState(false);
 
   useEffect(() => {
+    isMounted.current = true;
     loadInitialData();
     connectWebSocket();
 
     return () => {
+      isMounted.current = false;
       cleanupWebSocket();
     };
-  }, [id]);
+  }, [id, loadInitialData, connectWebSocket, cleanupWebSocket]);
 
-  const cleanupWebSocket = () => {
+  const cleanupWebSocket = useCallback(() => {
     if (ws.current) {
       ws.current.close();
       ws.current = null;
@@ -67,21 +57,61 @@ export default function ChatDetailScreen() {
       clearTimeout(retryTimerRef.current);
       retryTimerRef.current = null;
     }
-  };
+  }, []);
 
-  const loadInitialData = async () => {
+  const loadChatRoom = useCallback(async () => {
+    if (typeof id === 'string') {
+      try {
+        const room = await chatService.getChatRoom(id);
+        setChatRoom(room);
+      } catch (error) {
+        console.error('채팅방 정보 로드 실패:', error);
+      }
+    }
+  }, [id]);
+
+  const loadMessages = useCallback(async () => {
+    if (typeof id === 'string') {
+      try {
+        const response = await chatService.getMessages(id);
+        setMessages(response.content);
+      } catch (error: any) {
+        console.error('메시지 로드 실패:', error);
+      }
+    }
+  }, [id]);
+
+  const loadInitialData = useCallback(async () => {
     if (typeof id !== 'string') return;
 
     try {
       currentUserId.current = await authService.getCurrentUserId();
-
       await Promise.all([loadChatRoom(), loadMessages()]);
     } catch (error) {
       console.error('데이터 로드 실패:', error);
     }
-  };
+  }, [id, loadChatRoom, loadMessages]);
 
-  const connectWebSocket = async () => {
+  const handleReconnect = useCallback(() => {
+    if (!isMounted.current) return;
+
+    if (retryCount.current < MAX_RETRIES) {
+      retryCount.current += 1;
+      console.log(`[WebSocket] 재연결 시도 (${retryCount.current}/${MAX_RETRIES})...`);
+
+      // 지수 백오프 또는 단순 지연 (여기서는 2초)
+      retryTimerRef.current = setTimeout(() => {
+        if (isMounted.current) {
+          connectWebSocket();
+        }
+      }, 2000);
+    } else {
+      setIsConnectionFailed(true);
+      Alert.alert('연결 오류', '서버와 연결할 수 없습니다. 나중에 다시 시도해주세요.');
+    }
+  }, [connectWebSocket]);
+
+  const connectWebSocket = useCallback(async () => {
     if (typeof id !== 'string') return;
 
     try {
@@ -95,9 +125,13 @@ export default function ChatDetailScreen() {
       const socket = new WebSocket(wsUrl);
 
       socket.addEventListener('open', () => {
+        if (!isMounted.current) {
+          socket.close();
+          return;
+        }
         console.log('[WebSocket] 연결됨');
         setWsStatus(WebSocket.OPEN);
-        setRetryCount(0);
+        retryCount.current = 0;
       });
 
       socket.addEventListener('message', (event) => {
@@ -132,45 +166,7 @@ export default function ChatDetailScreen() {
       setWsStatus(WebSocket.CLOSED);
       handleReconnect();
     }
-  };
-
-  const handleReconnect = () => {
-    if (retryCount < MAX_RETRIES) {
-      const nextRetryCount = retryCount + 1;
-      setRetryCount(nextRetryCount);
-      console.log(`[WebSocket] 재연결 시도 (${nextRetryCount}/${MAX_RETRIES})...`);
-
-      // 지수 백오프 또는 단순 지연 (여기서는 2초)
-      retryTimerRef.current = setTimeout(() => {
-        connectWebSocket();
-      }, 2000);
-    } else {
-      setIsConnectionFailed(true);
-      Alert.alert('연결 오류', '서버와 연결할 수 없습니다. 나중에 다시 시도해주세요.');
-    }
-  };
-
-  const loadChatRoom = async () => {
-    if (typeof id === 'string') {
-      try {
-        const room = await chatService.getChatRoom(id);
-        setChatRoom(room);
-      } catch (error) {
-        console.error('채팅방 정보 로드 실패:', error);
-      }
-    }
-  };
-
-  const loadMessages = async () => {
-    if (typeof id === 'string') {
-      try {
-        const response = await chatService.getMessages(id);
-        setMessages(response.content);
-      } catch (error: any) {
-        console.error('메시지 로드 실패:', error);
-      }
-    }
-  };
+  }, [id, handleReconnect]);
 
   const handleSend = async () => {
     if (!inputText.trim() || typeof id !== 'string') return;
@@ -327,13 +323,11 @@ export default function ChatDetailScreen() {
         <View style={styles.errorState}>
           <IconSymbol name="wifi.slash" size={48} color={colors.gray[300]} />
           <ThemedText style={styles.errorTitle}>연결에 실패했습니다</ThemedText>
-          <ThemedText style={styles.errorDescription}>
-            서버와의 연결이 원활하지 않습니다.{"\n"}인터넷 연결을 확인하고 다시 시도해주세요.
-          </ThemedText>
+          <ThemedText style={styles.errorDescription}>서버와의 연결이 원활하지 않습니다.{'\n'}인터넷 연결을 확인하고 다시 시도해주세요.</ThemedText>
           <TouchableOpacity
             style={styles.retryButton}
             onPress={() => {
-              setRetryCount(0);
+              retryCount.current = 0;
               connectWebSocket();
             }}
           >

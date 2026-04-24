@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Alert } from '@/services/alert';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -10,6 +10,15 @@ export default function LoginScreen() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    // 이미 로그인된 상태라면 메인 화면으로 이동
+    authService.isLoggedIn().then((loggedIn) => {
+      if (loggedIn) {
+        router.replace('/(tabs)/chats');
+      }
+    });
+  }, []);
 
   const handleLogin = async () => {
     if (!username.trim() || !password.trim()) {

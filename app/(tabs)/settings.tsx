@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Switch, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Switch, TouchableOpacity, View, ScrollView } from 'react-native';
 import { Alert } from '@/services/alert';
 import { router } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
@@ -64,7 +64,7 @@ export default function SettingsScreen() {
         <ThemedText type="title">설정</ThemedText>
       </View>
 
-      <View style={styles.content}>
+      <ScrollView style={styles.flex1} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
         <View style={styles.profileSection}>
           <View style={styles.avatar}>
             <ThemedText style={styles.avatarText}>{currentUser?.name ? currentUser.name[0] : '?'}</ThemedText>
@@ -147,7 +147,7 @@ export default function SettingsScreen() {
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <ThemedText style={styles.logoutText}>로그아웃</ThemedText>
         </TouchableOpacity>
-      </View>
+      </ScrollView>
     </ThemedView>
   );
 }
@@ -164,8 +164,11 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: 16,
   },
-  content: {
+  flex1: {
     flex: 1,
+  },
+  contentContainer: {
+    paddingBottom: 100,
   },
   profileSection: {
     flexDirection: 'row',
