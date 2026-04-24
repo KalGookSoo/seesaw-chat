@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, RefreshControl } from 'react-native';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { chatService } from '@/services/api';
 import type { ChatRoomExtended } from '@/services/mock-data';
 import { colors, spacing, borderRadius, fontSize, fontWeight, shadows } from '@/constants/design';
@@ -9,9 +9,11 @@ export default function ChatsScreen() {
   const [chatRooms, setChatRooms] = useState<ChatRoomExtended[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    loadChatRooms();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      loadChatRooms();
+    }, [])
+  );
 
   const loadChatRooms = async () => {
     try {

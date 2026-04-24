@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { FlatList, Modal, RefreshControl, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { router } from 'expo-router';
 import { Alert } from '@/services/alert';
 import { chatService, friendService } from '@/services/api';
 import type { FriendResponse, UserResponse } from '@/services/mock-data';
@@ -127,12 +128,18 @@ export default function FriendsScreen() {
     }
 
     try {
-      await chatService.createChatRoom(newChatRoomName, selectedFriends);
+      const newRoom = await chatService.createChatRoom(newChatRoomName, selectedFriends);
       Alert.alert('성공', '채팅방이 생성되었습니다.');
       setShowCreateModal(false);
       setIsCreateChatMode(false);
       setSelectedFriends([]);
       setNewChatRoomName('');
+
+      // 새 채팅방으로 이동
+      router.push({
+        pathname: '/chat/[id]',
+        params: { id: newRoom.id, name: newRoom.name || '채팅방' },
+      });
     } catch (error: any) {
       Alert.handleApiError(error, '채팅방 생성 실패');
     }
