@@ -211,7 +211,7 @@ export function decodeJwt(token: string): any {
 
     return JSON.parse(utf8Payload);
   } catch (e) {
-    console.error('[decodeJwt] Failed:', e);
+    console.error('[decodeJwt] 실패:', e);
     return null;
   }
 }

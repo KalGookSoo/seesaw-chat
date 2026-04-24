@@ -27,7 +27,7 @@ export default function ProfileEditScreen() {
         setName(user.name);
       }
     } catch (error: any) {
-      console.error('Failed to load profile:', error);
+      console.error('프로필 로드 실패:', error);
     } finally {
       setFetching(false);
     }

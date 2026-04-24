@@ -21,7 +21,7 @@ export default function SettingsScreen() {
           setCurrentUser(user);
         }
       } catch (error: any) {
-        console.error('Failed to load user info:', error);
+        console.error('사용자 정보 로드 실패:', error);
       }
     };
     loadUserInfo();
@@ -39,7 +39,7 @@ export default function SettingsScreen() {
       }
       setPushEnabled(value);
     } catch (error) {
-      console.error('Push subscription error:', error);
+      console.error('푸시 구독 오류:', error);
       Alert.alert('오류', '푸시 알림 설정에 실패했습니다.');
     }
   };

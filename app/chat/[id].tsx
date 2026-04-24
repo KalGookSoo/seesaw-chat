@@ -35,7 +35,7 @@ export default function ChatDetailScreen() {
         const response = await chatService.getMessages(id);
         setMessages(response.content);
       } catch (error: any) {
-        console.error('Failed to load messages:', error);
+        console.error('메시지 로드 실패:', error);
         const isNetworkError = error.message?.includes('fetch') || error.name === 'TypeError';
         if (isNetworkError) {
           Alert.alert('연결 오류', '서버에서 메시지를 불러올 수 없습니다.');
@@ -69,7 +69,7 @@ export default function ChatDetailScreen() {
       };
       setMessages((prev) => [...prev, optimisticMessage]);
     } catch (error) {
-      console.error('Failed to send message:', error);
+      console.error('메시지 전송 실패:', error);
       setInputText(messageText);
     } finally {
       setLoading(false);

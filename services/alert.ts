@@ -20,7 +20,7 @@ export const Alert = {
 
   /** API 에러 상황별 맞춤 피드백 */
   handleApiError: (error: any, defaultTitle: string = '알림') => {
-    console.error(`[ApiError] ${defaultTitle}:`, error);
+    console.error(`[API 오류] ${defaultTitle}:`, error);
 
     let title = defaultTitle;
     let message = '일시적인 문제가 발생했습니다.';

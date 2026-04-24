@@ -26,7 +26,7 @@ export default function PasswordChangeScreen() {
         setUserId(user.id);
       }
     } catch (error: any) {
-      console.error('Failed to load user ID:', error);
+      console.error('사용자 ID 로드 실패:', error);
     }
   };
 

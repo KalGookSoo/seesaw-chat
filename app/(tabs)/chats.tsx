@@ -18,7 +18,7 @@ export default function ChatsScreen() {
       const rooms = await chatService.getChatRooms();
       setChatRooms(rooms);
     } catch (error) {
-      console.error('Failed to load chat rooms:', error);
+      console.error('채팅방 목록 로드 실패:', error);
     }
   };
 
