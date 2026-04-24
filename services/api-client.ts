@@ -1,8 +1,13 @@
-/**
- * API 클라이언트 - JWT Bearer 인증, 자동 토큰 갱신, 에러 처리를 담당합니다.
- * api-docs.yaml의 securitySchemes.BearerAuthentication 스펙을 준수합니다.
- */
+import { router } from 'expo-router';
 import { tokenStorage } from './storage';
+import * as base64js from 'base64-js';
+
+let currentPathname = '/';
+
+/** 현재 경로 추적 (RootLayout 등에서 호출) */
+export function setCurrentPathname(path: string) {
+  currentPathname = path;
+}
 
 // 서버 기본 URL — 환경에 따라 변경하세요.
 // 예: 'http://localhost:8080' 또는 process.env.EXPO_PUBLIC_API_URL
@@ -66,10 +71,7 @@ export class ApiError extends Error {
 
 const REQUEST_TIMEOUT = 10000; // 10초 타임아웃
 
-export async function request<T = void>(
-  path: string,
-  options: RequestInit & { skipAuth?: boolean } = {},
-): Promise<T> {
+export async function request<T = void>(path: string, options: RequestInit & { skipAuth?: boolean } = {}): Promise<T> {
   const { skipAuth = false, ...fetchOptions } = options;
 
   const controller = new AbortController();
@@ -152,8 +154,14 @@ export async function request<T = void>(
             isRefreshing = false;
           }
         }
-        // 갱신 실패 시 토큰 삭제 및 에러 발생
+        // 갱신 실패 시 토큰 삭제 및 리디렉션
         await tokenStorage.clearTokens();
+        
+        // 로그인/회원가입 페이지가 아닐 때만 리디렉션 (무한 루프 방지)
+        if (currentPathname !== '/' && !currentPathname.startsWith('/auth')) {
+          router.replace(`/?redirect=${encodeURIComponent(currentPathname)}`);
+        }
+        
         throw new ApiError(401, '세션이 만료되었습니다. 다시 로그인해주세요.', body);
       }
 
@@ -170,10 +178,45 @@ export async function request<T = void>(
   }
 }
 
-// 편의 메서드
+export function decodeJwt(token: string): any {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+
+    let base64Url = parts[1];
+    // 1. Base64Url -> Base64 문자로 변환
+    base64Url = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+
+    // 2. 패딩(Padding) 맞추기 (base64-js는 패딩에 엄격함)
+    while (base64Url.length % 4) {
+      base64Url += '=';
+    }
+
+    // 3. 디코딩하여 Uint8Array(바이트 배열) 획득
+    const byteArray = base64js.toByteArray(base64Url);
+
+    // 4. 바이트 배열을 UTF-8 문자열로 변환 (한글 처리 포함)
+    // TextDecoder가 없는 환경을 대비한 수동 변환 방식
+    let jsonPayload = '';
+    for (let i = 0; i < byteArray.length; i++) {
+      jsonPayload += String.fromCharCode(byteArray[i]);
+    }
+
+    // 만약 한글이 포함되어 있다면 위 루프 대신 아래 방식을 권장합니다.
+    const utf8Payload = decodeURIComponent(
+      Array.from(byteArray)
+        .map((b) => '%' + b.toString(16).padStart(2, '0'))
+        .join(''),
+    );
+
+    return JSON.parse(utf8Payload);
+  } catch (e) {
+    console.error('[decodeJwt] Failed:', e);
+    return null;
+  }
+}
 export const apiClient = {
-  get: <T>(path: string, options?: RequestInit) =>
-    request<T>(path, { ...options, method: 'GET' }),
+  get: <T>(path: string, options?: RequestInit) => request<T>(path, { ...options, method: 'GET' }),
 
   post: <T>(path: string, body?: unknown, options?: RequestInit) =>
     request<T>(path, {
@@ -189,8 +232,14 @@ export const apiClient = {
       body: body !== undefined ? JSON.stringify(body) : undefined,
     }),
 
-  delete: <T>(path: string, options?: RequestInit) =>
-    request<T>(path, { ...options, method: 'DELETE' }),
+  patch: <T>(path: string, body?: unknown, options?: RequestInit) =>
+    request<T>(path, {
+      ...options,
+      method: 'PATCH',
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+    }),
+
+  delete: <T>(path: string, options?: RequestInit) => request<T>(path, { ...options, method: 'DELETE' }),
 
   /** 인증 불필요한 요청 (로그인, 회원가입, 토큰 갱신) */
   postPublic: <T>(path: string, body?: unknown) =>

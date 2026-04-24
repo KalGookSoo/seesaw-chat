@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Alert } from '@/services/alert';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { authService } from '@/services/api';
 import { borderRadius, colors, fontSize, fontWeight, shadows, spacing } from '@/constants/design';
 
 export default function LoginScreen() {
+  const { redirect } = useLocalSearchParams<{ redirect: string }>();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -19,7 +20,12 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       await authService.login(username, password);
-      router.replace('/(tabs)/chats');
+      // 리디렉션 파라미터가 있으면 해당 페이지로, 없으면 기본 페이지로 이동
+      if (redirect) {
+        router.replace(redirect as any);
+      } else {
+        router.replace('/(tabs)/chats');
+      }
     } catch (error: any) {
       Alert.handleApiError(error, '로그인 실패');
     } finally {

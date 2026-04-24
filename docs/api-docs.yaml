@@ -1,4 +1,4 @@
-openapi: 3.0.1
+openapi: 3.1.0
 info:
   title: chat-demo API Documentation
   description: API documentation for chat-demo
@@ -28,6 +28,47 @@ tags:
 - name: 웹 푸시 구독 API
   description: 브라우저별 웹 푸시 구독 정보를 관리합니다.
 paths:
+  /api/users/{userId}:
+    get:
+      tags:
+      - 사용자 API
+      summary: 사용자 상세 조회
+      description: 특정 사용자의 상세 정보 및 권한 목록을 조회합니다.
+      operationId: getUserDetail
+      parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+    put:
+      tags:
+      - 사용자 API
+      summary: 사용자 기본정보 수정
+      description: 계정 정보를 수정합니다.
+      operationId: updateProfile
+      parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdateRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
   /api/friends/{friendId}/accept:
     put:
       tags:
@@ -86,12 +127,22 @@ paths:
       responses:
         "201":
           description: 회원가입 성공
-        "422":
-          description: 유효성 검사 실패
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+  /api/sign-out:
+    post:
+      tags:
+      - 인증 API
+      summary: 로그아웃
+      description: 액세스 토큰과 리프레시 토큰을 파기합니다.
+      operationId: signOut
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TokenRevokeRequest"
+        required: true
+      responses:
+        "200":
+          description: 로그아웃 성공
   /api/sign-in:
     post:
       tags:
@@ -106,24 +157,18 @@ paths:
               $ref: "#/components/schemas/SignInRequest"
         required: true
       responses:
-        "401":
-          description: 인증 실패
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/JsonWebToken"
         "200":
           description: 로그인 성공
           content:
             '*/*':
               schema:
                 $ref: "#/components/schemas/JsonWebToken"
-        "422":
-          description: 유효성 검사 실패
+        "401":
+          description: 인증 실패
           content:
-            application/json:
+            '*/*':
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: "#/components/schemas/JsonWebToken"
   /api/push/subscriptions:
     post:
       tags:
@@ -144,12 +189,6 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/PushSubscriptionResponse"
-        "422":
-          description: 유효성 검사 실패
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
     delete:
       tags:
       - 웹 푸시 구독 API
@@ -181,12 +220,6 @@ paths:
       responses:
         "200":
           description: OK
-        "422":
-          description: 유효성 검사 실패
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
   /api/chat-rooms:
     get:
       tags:
@@ -222,6 +255,28 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/ChatRoomResponse"
+  /api/users/{userId}/password:
+    patch:
+      tags:
+      - 사용자 API
+      summary: 패스워드 변경
+      description: 계정의 패스워드를 변경합니다.
+      operationId: changePassword
+      parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PasswordChangeRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
   /api/users:
     get:
       tags:
@@ -244,26 +299,6 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/UserResponse"
-  /api/users/{userId}:
-    get:
-      tags:
-      - 사용자 API
-      summary: 사용자 상세 조회
-      description: 특정 사용자의 상세 정보 및 권한 목록을 조회합니다.
-      operationId: getUserDetail
-      parameters:
-      - name: userId
-        in: path
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: "#/components/schemas/UserResponse"
   /api/messages:
     get:
       tags:
@@ -335,17 +370,29 @@ paths:
           description: OK
 components:
   schemas:
-    TokenRefreshRequest:
-      required:
-      - refreshToken
+    UserUpdateRequest:
       type: object
+      description: 사용자 기본정보 수정 요청
+      properties:
+        name:
+          type: string
+          description: 이름
+          minLength: 1
+      required:
+      - name
+    TokenRefreshRequest:
+      type: object
+      description: 토큰 갱신 요청
       properties:
         refreshToken:
           type: string
           description: 리프레시 토큰
-      description: 토큰 갱신 요청
+          minLength: 1
+      required:
+      - refreshToken
     JsonWebToken:
       type: object
+      description: JWT 토큰 정보
       properties:
         accessToken:
           type: string
@@ -355,46 +402,64 @@ components:
           description: 리프레시 토큰
         expiresIn:
           type: integer
-          description: 만료 시간 (초)
           format: int64
-      description: JWT 토큰 정보
+          description: 만료 시간 (초)
     SignUpRequest:
-      required:
-      - password
-      - username
       type: object
+      description: 회원가입 요청
       properties:
         username:
           type: string
           description: 아이디
+          minLength: 1
         password:
           type: string
           description: 패스워드
+          minLength: 1
         name:
           type: string
           description: 이름
-      description: 회원가입 요청
-    SignInRequest:
       required:
       - password
       - username
+    TokenRevokeRequest:
       type: object
+      description: 토큰 파기 요청
+      properties:
+        accessToken:
+          type: string
+          description: 액세스 토큰
+          minLength: 1
+        refreshToken:
+          type: string
+          description: 리프레시 토큰
+          minLength: 1
+      required:
+      - accessToken
+      - refreshToken
+    SignInRequest:
+      type: object
+      description: 로그인 요청
       properties:
         username:
           type: string
           description: 아이디
+          minLength: 1
         password:
           type: string
           description: 패스워드
-      description: 로그인 요청
-    PushSubscriptionRequest:
+          minLength: 1
       required:
-      - endpoint
+      - password
+      - username
+    PushSubscriptionRequest:
       type: object
+      description: 웹 푸시 구독 등록 요청
       properties:
         endpoint:
           type: string
           description: 브라우저 푸시 서비스 주소
+          minLength: 1
         p256dh:
           type: string
           description: 공개키 (p256dh)
@@ -407,9 +472,11 @@ components:
         deviceName:
           type: string
           description: 기기 명칭
-      description: 웹 푸시 구독 등록 요청
+      required:
+      - endpoint
     PushSubscriptionResponse:
       type: object
+      description: 웹 푸시 구독 정보 응답
       properties:
         id:
           type: string
@@ -434,25 +501,24 @@ components:
           description: 기기 명칭
         createdDate:
           type: string
-          description: 생성일시
           format: date-time
-      description: 웹 푸시 구독 정보 응답
+          description: 생성일시
     FriendRequest:
       type: object
+      description: 친구 요청
       properties:
         username:
           type: string
           description: 친구 계정명
-      description: 친구 요청
     ChatRoomCreateRequest:
-      required:
-      - name
       type: object
+      description: 채팅방 생성 요청
       properties:
         name:
           type: string
           description: 채팅방 이름
           example: 점심 메뉴 정하기
+          minLength: 1
         friendIds:
           type: array
           description: 초대할 친구 ID 목록
@@ -461,11 +527,11 @@ components:
           - user-uuid-2
           items:
             type: string
-            description: 초대할 친구 ID 목록
-            example: "[\"user-uuid-1\",\"user-uuid-2\"]"
-      description: 채팅방 생성 요청
+      required:
+      - name
     ChatRoomResponse:
       type: object
+      description: 채팅방 응답
       properties:
         id:
           type: string
@@ -473,9 +539,19 @@ components:
         name:
           type: string
           description: 채팅방 이름
-      description: 채팅방 응답
+    PasswordChangeRequest:
+      type: object
+      description: 패스워드 변경 요청
+      properties:
+        newPassword:
+          type: string
+          description: 새 패스워드
+          minLength: 1
+      required:
+      - newPassword
     UserSearch:
       type: object
+      description: 사용자 검색 조건
       properties:
         username:
           type: string
@@ -483,9 +559,9 @@ components:
         name:
           type: string
           description: 이름
-      description: 사용자 검색 조건
     UserResponse:
       type: object
+      description: 사용자 정보 응답
       properties:
         id:
           type: string
@@ -498,33 +574,32 @@ components:
           description: 이름
         registeredAt:
           type: string
-          description: 가입일
           format: date-time
+          description: 가입일
         contactNumber:
           type: string
           description: 연락처
         expiredDate:
           type: string
-          description: 만료 일시
           format: date-time
+          description: 만료 일시
         lockedDate:
           type: string
-          description: 잠금 일시
           format: date-time
+          description: 잠금 일시
         credentialsExpiredDate:
           type: string
-          description: 패스워드 만료 일시
           format: date-time
+          description: 패스워드 만료 일시
         roles:
-          uniqueItems: true
           type: array
           description: 권한 목록
           items:
             type: string
-            description: 권한 목록
-      description: 사용자 정보 응답
+          uniqueItems: true
     MessageResponse:
       type: object
+      description: 메시지 응답
       properties:
         id:
           type: string
@@ -546,11 +621,11 @@ components:
           description: MIME 타입
         createdDate:
           type: string
-          description: 생성일시
           format: date-time
+          description: 생성일시
         sender:
           $ref: "#/components/schemas/SenderResponse"
-      description: 메시지 응답
+          description: 발신자 정보
     PageMetadata:
       type: object
       properties:
@@ -577,6 +652,7 @@ components:
           $ref: "#/components/schemas/PageMetadata"
     SenderResponse:
       type: object
+      description: 발신자 정보
       properties:
         id:
           type: string
@@ -584,48 +660,23 @@ components:
         name:
           type: string
           description: 발신자 이름
-      description: 발신자 정보
     FriendResponse:
       type: object
+      description: 친구 정보 응답
       properties:
         userId:
           type: string
           description: 내 식별자
         friend:
           $ref: "#/components/schemas/UserResponse"
+          description: 친구
         status:
           type: string
-          description: 친구 상태
+          description: 상태
           enum:
           - PENDING
           - ACCEPTED
           - BLOCKED
-      description: 친구 정보 응답
-    ValidationError:
-      type: object
-      properties:
-        code:
-          type: string
-          description: 오류 코드
-        message:
-          type: string
-          description: 오류 메시지
-        field:
-          type: string
-          description: 오류 발생 필드
-        rejectedValue:
-          type: object
-          description: 거절된 값
-      description: 유효성 검사 오류 정보
-    ErrorResponse:
-      type: object
-      properties:
-        message:
-          type: string
-        errors:
-          type: array
-          items:
-            $ref: "#/components/schemas/ValidationError"
   securitySchemes:
     Bearer Authentication:
       type: http

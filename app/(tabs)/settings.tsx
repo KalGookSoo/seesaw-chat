@@ -1,33 +1,37 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Switch } from 'react-native';
+import { StyleSheet, Switch, TouchableOpacity, View } from 'react-native';
 import { Alert } from '@/services/alert';
 import { router } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { authService, pushService } from '@/services/api';
+import { authService, pushService, userService } from '@/services/api';
+import type { UserResponse } from '@/services/mock-data';
 
 export default function SettingsScreen() {
   const [pushEnabled, setPushEnabled] = useState(true);
-  const [currentUser, setCurrentUser] = useState({ name: '', username: '' });
+  const [currentUser, setCurrentUser] = useState<UserResponse | null>(null);
 
   useEffect(() => {
-    // 현재 로그인한 사용자 정보는 JWT 토큰 파싱 또는 별도 /api/me 엔드포인트로 가져와야 합니다.
-    // 현재 API 스펙에 /api/me가 없으므로 토큰에서 파싱하거나 로그인 시 저장한 정보를 사용합니다.
-    // 임시로 빈 값 표시 (백엔드 /api/me 추가 후 실제 구현 필요)
+    const loadUserInfo = async () => {
+      try {
+        const userId = await authService.getCurrentUserId();
+        if (userId) {
+          const user = await userService.getUser(userId);
+          setCurrentUser(user);
+        }
+      } catch (error: any) {
+        console.error('Failed to load user info:', error);
+      }
+    };
+    loadUserInfo();
   }, []);
 
   const handlePushToggle = async (value: boolean) => {
     try {
       if (value) {
         // Mock push subscription - in real app, would use actual web push API
-        await pushService.subscribe(
-          'https://fcm.googleapis.com/fcm/send/mock-endpoint',
-          'mock-p256dh-key',
-          'mock-auth-key',
-          navigator.userAgent,
-          'iOS Device'
-        );
+        await pushService.subscribe('https://fcm.googleapis.com/fcm/send/mock-endpoint', 'mock-p256dh-key', 'mock-auth-key', navigator.userAgent, 'iOS Device');
         Alert.alert('알림 설정', '푸시 알림이 활성화되었습니다.');
       } else {
         await pushService.unsubscribe('https://fcm.googleapis.com/fcm/send/mock-endpoint');
@@ -63,11 +67,11 @@ export default function SettingsScreen() {
       <View style={styles.content}>
         <View style={styles.profileSection}>
           <View style={styles.avatar}>
-            <ThemedText style={styles.avatarText}>{currentUser.name ? currentUser.name[0] : '?'}</ThemedText>
+            <ThemedText style={styles.avatarText}>{currentUser?.name ? currentUser.name[0] : '?'}</ThemedText>
           </View>
           <View style={styles.profileInfo}>
-            <ThemedText style={styles.profileName}>{currentUser.name || '사용자'}</ThemedText>
-            <ThemedText style={styles.profileUsername}>@{currentUser.username || '-'}</ThemedText>
+            <ThemedText style={styles.profileName}>{currentUser?.name || '사용자'}</ThemedText>
+            <ThemedText style={styles.profileUsername}>@{currentUser?.username || '-'}</ThemedText>
           </View>
         </View>
 
@@ -78,48 +82,32 @@ export default function SettingsScreen() {
               <IconSymbol name="bell.fill" size={20} color="#007AFF" style={styles.settingIcon} />
               <View>
                 <ThemedText style={styles.settingLabel}>푸시 알림</ThemedText>
-                <ThemedText style={styles.settingDescription}>
-                  새 메시지 알림을 받습니다
-                </ThemedText>
+                <ThemedText style={styles.settingDescription}>새 메시지 알림을 받습니다</ThemedText>
               </View>
             </View>
-            <Switch
-              value={pushEnabled}
-              onValueChange={handlePushToggle}
-              trackColor={{ false: '#E8E8E8', true: '#007AFF' }}
-              thumbColor="#fff"
-            />
+            <Switch value={pushEnabled} onValueChange={handlePushToggle} trackColor={{ false: '#E8E8E8', true: '#007AFF' }} thumbColor="#fff" />
           </View>
         </View>
 
         <View style={styles.section}>
           <ThemedText style={styles.sectionTitle}>계정</ThemedText>
-          <TouchableOpacity style={styles.settingItem}>
+          <TouchableOpacity style={styles.settingItem} onPress={() => router.push('/settings/profile')}>
             <View style={styles.settingInfo}>
-              <IconSymbol
-                name="person.circle.fill"
-                size={20}
-                color="#007AFF"
-                style={styles.settingIcon}
-              />
+              <IconSymbol name="person.circle.fill" size={20} color="#007AFF" style={styles.settingIcon} />
               <View>
                 <ThemedText style={styles.settingLabel}>프로필 편집</ThemedText>
-                <ThemedText style={styles.settingDescription}>
-                  이름과 프로필 사진을 변경합니다
-                </ThemedText>
+                <ThemedText style={styles.settingDescription}>이름과 프로필 사진을 변경합니다</ThemedText>
               </View>
             </View>
             <IconSymbol name="chevron.right" size={16} color="#999" />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.settingItem}>
+          <TouchableOpacity style={styles.settingItem} onPress={() => router.push('/settings/password')}>
             <View style={styles.settingInfo}>
               <IconSymbol name="lock.fill" size={20} color="#007AFF" style={styles.settingIcon} />
               <View>
                 <ThemedText style={styles.settingLabel}>패스워드 변경</ThemedText>
-                <ThemedText style={styles.settingDescription}>
-                  계정 패스워드를 변경합니다
-                </ThemedText>
+                <ThemedText style={styles.settingDescription}>계정 패스워드를 변경합니다</ThemedText>
               </View>
             </View>
             <IconSymbol name="chevron.right" size={16} color="#999" />
@@ -130,12 +118,7 @@ export default function SettingsScreen() {
           <ThemedText style={styles.sectionTitle}>정보</ThemedText>
           <TouchableOpacity style={styles.settingItem}>
             <View style={styles.settingInfo}>
-              <IconSymbol
-                name="info.circle.fill"
-                size={20}
-                color="#007AFF"
-                style={styles.settingIcon}
-              />
+              <IconSymbol name="info.circle.fill" size={20} color="#007AFF" style={styles.settingIcon} />
               <ThemedText style={styles.settingLabel}>앱 정보</ThemedText>
             </View>
             <View style={styles.versionContainer}>
@@ -146,12 +129,7 @@ export default function SettingsScreen() {
 
           <TouchableOpacity style={styles.settingItem}>
             <View style={styles.settingInfo}>
-              <IconSymbol
-                name="doc.text.fill"
-                size={20}
-                color="#007AFF"
-                style={styles.settingIcon}
-              />
+              <IconSymbol name="doc.text.fill" size={20} color="#007AFF" style={styles.settingIcon} />
               <ThemedText style={styles.settingLabel}>이용약관</ThemedText>
             </View>
             <IconSymbol name="chevron.right" size={16} color="#999" />
@@ -159,12 +137,7 @@ export default function SettingsScreen() {
 
           <TouchableOpacity style={styles.settingItem}>
             <View style={styles.settingInfo}>
-              <IconSymbol
-                name="hand.raised.fill"
-                size={20}
-                color="#007AFF"
-                style={styles.settingIcon}
-              />
+              <IconSymbol name="hand.raised.fill" size={20} color="#007AFF" style={styles.settingIcon} />
               <ThemedText style={styles.settingLabel}>개인정보처리방침</ThemedText>
             </View>
             <IconSymbol name="chevron.right" size={16} color="#999" />

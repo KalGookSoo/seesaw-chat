@@ -73,9 +73,7 @@ export default function ChatsScreen() {
           </Text>
           {item.unreadCount !== undefined && item.unreadCount > 0 && (
             <View style={styles.unreadBadge}>
-              <Text style={styles.unreadText}>
-                {item.unreadCount > 99 ? '99+' : item.unreadCount}
-              </Text>
+              <Text style={styles.unreadText}>{item.unreadCount > 99 ? '99+' : item.unreadCount}</Text>
             </View>
           )}
         </View>
@@ -97,17 +95,8 @@ export default function ChatsScreen() {
         data={chatRooms}
         renderItem={renderChatRoomItem}
         keyExtractor={(item) => item.id}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={handleRefresh}
-            tintColor={colors.primary[600]}
-          />
-        }
-        contentContainerStyle={[
-          styles.listContent,
-          chatRooms.length === 0 && styles.emptyListContent
-        ]}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colors.primary[600]} />}
+        contentContainerStyle={[styles.listContent, chatRooms.length === 0 && styles.emptyListContent]}
         ListEmptyComponent={
           <View style={styles.emptyState}>
             <Text style={styles.emptyIcon}>💬</Text>
