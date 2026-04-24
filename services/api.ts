@@ -39,7 +39,7 @@ export const authService = {
         await apiClient.post('/api/sign-out', { accessToken, refreshToken });
       }
     } catch (error) {
-      console.error('Server logout failed:', error);
+      console.error('서버 로그아웃 실패:', error);
     } finally {
       await tokenStorage.clearTokens();
     }
@@ -126,7 +126,18 @@ export const userService = {
   updatePassword: (userId: string, newPassword: string): Promise<void> => apiClient.patch<void>(`/api/users/${userId}/password`, { newPassword }),
 
   /** PUT /api/users/{userId} → void (사용자 정보 수정) */
-  updateProfile: (userId: string, name: string): Promise<void> => apiClient.put<void>(`/api/users/${userId}`, { name }),
+  updateProfile: async (userId: string, name: string): Promise<void> => {
+    await apiClient.put<void>(`/api/users/${userId}`, { name });
+
+    const refreshToken = await tokenStorage.getRefreshToken();
+    if (refreshToken) {
+      try {
+        await authService.refreshToken(refreshToken);
+      } catch (error) {
+        console.warn('프로필이 수정되었으나 토큰 갱신에 실패했습니다:', error);
+      }
+    }
+  },
 };
 
 // ─────────────────────────────────────────────
