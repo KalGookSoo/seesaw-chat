@@ -126,13 +126,16 @@ export default function ChatDetailScreen() {
 
       socket.addEventListener('message', (event) => {
         try {
-          const data = JSON.parse(event.data);
-          const message: MessageResponse = data.message;
-          if (message) {
-            setMessages((prev) => [...prev, message]);
+          const message: MessageResponse = JSON.parse(event.data);
+
+          if (message && message.chatRoomId === id) {
+            setMessages((prev) => {
+              if (prev.some((m) => m.id === message.id)) return prev;
+              return [...prev, message];
+            });
           }
         } catch (e) {
-          console.error('[WebSocket] 메시지 파싱 오류:', e);
+          console.error('[WebSocket] 메시지 수신 및 파싱 오류:', e);
         }
       });
 
@@ -265,7 +268,8 @@ export default function ChatDetailScreen() {
   const isCreator = chatRoom?.createdBy === currentUserId.current;
 
   const renderMessage = ({ item, index }: { item: MessageResponse; index: number }) => {
-    if (item.type === 'NOTIFICATION') {
+    // 알림 메시지거나 발신자 정보가 없는 경우 시스템 메시지로 처리
+    if (item.type === 'NOTIFICATION' || !item.sender) {
       return (
         <View style={styles.notificationContainer}>
           <ThemedText style={styles.notificationText}>{item.content}</ThemedText>
@@ -273,9 +277,9 @@ export default function ChatDetailScreen() {
       );
     }
 
-    const isMyMessage = item.sender.id === currentUserId.current;
+    const isMyMessage = item.sender?.id === currentUserId.current;
     const prevMessage = index > 0 ? messages[index - 1] : null;
-    const showSender = !prevMessage || prevMessage.sender.id !== item.sender.id || !isMyMessage;
+    const showSender = !prevMessage || prevMessage.sender?.id !== item.sender?.id || !isMyMessage;
 
     return (
       <View style={[styles.messageContainer, isMyMessage ? styles.myMessageContainer : styles.otherMessageContainer]}>

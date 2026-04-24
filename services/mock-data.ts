@@ -27,10 +27,6 @@ export interface UserSearch {
   name?: string;
 }
 
-export interface SenderResponse {
-  id: string;
-  name: string;
-}
 
 export interface FriendResponse {
   userId: string;
@@ -57,7 +53,7 @@ export interface MessageResponse {
   type: 'CHAT' | 'NOTIFICATION';
   mimeType?: string;
   createdDate: string;
-  sender: SenderResponse;
+  sender: UserResponse;
 }
 
 export interface PageMetadata {
