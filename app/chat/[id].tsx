@@ -1,9 +1,21 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Dimensions, FlatList, KeyboardAvoidingView, Modal, Platform, Pressable, SafeAreaView, ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+  Dimensions,
+  FlatList,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native';
 import { Alert } from '@/services/alert';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { authService, chatService, friendService } from '@/services/api';
 import { tokenStorage } from '@/services/storage';
 import type { ChatRoomResponse, FriendResponse, MessageResponse, UserResponse } from '@/services/mock-data';
@@ -18,11 +30,14 @@ export default function ChatDetailScreen() {
   const [chatRoom, setChatRoom] = useState<ChatRoomResponse | null>(null);
   const [messages, setMessages] = useState<MessageResponse[]>([]);
   const [inputText, setInputText] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-
-  // WebSocket
+  const [wsStatus, setWsStatus] = useState<number>(WebSocket.CONNECTING);
+  const [isConnectionFailed, setIsConnectionFailed] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+  const MAX_RETRIES = 5;
   const ws = useRef<WebSocket | null>(null);
+  const currentUserId = useRef<string | null>(null);
+  const retryTimerRef = useRef<number | null>(null);
+  const flatListRef = useRef<FlatList>(null);
 
   // Drawer & Modals
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -39,21 +54,27 @@ export default function ChatDetailScreen() {
     connectWebSocket();
 
     return () => {
-      if (ws.current) {
-        ws.current.close();
-      }
+      cleanupWebSocket();
     };
   }, [id]);
+
+  const cleanupWebSocket = () => {
+    if (ws.current) {
+      ws.current.close();
+      ws.current = null;
+    }
+    if (retryTimerRef.current) {
+      clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = null;
+    }
+  };
 
   const loadInitialData = async () => {
     if (typeof id !== 'string') return;
 
     try {
-      // 1. 현재 사용자 정보 가져오기
-      const userId = await authService.getCurrentUserId();
-      setCurrentUserId(userId);
+      currentUserId.current = await authService.getCurrentUserId();
 
-      // 2. 채팅방 상세 정보 및 메시지 로드
       await Promise.all([loadChatRoom(), loadMessages()]);
     } catch (error) {
       console.error('데이터 로드 실패:', error);
@@ -64,6 +85,8 @@ export default function ChatDetailScreen() {
     if (typeof id !== 'string') return;
 
     try {
+      setWsStatus(WebSocket.CONNECTING);
+      setIsConnectionFailed(false);
       const token = await tokenStorage.getAccessToken();
       const baseUrl = BASE_URL.replace(/\/$/, '');
       const wsBaseUrl = baseUrl.replace(/^http/, 'ws');
@@ -73,6 +96,8 @@ export default function ChatDetailScreen() {
 
       socket.addEventListener('open', () => {
         console.log('[WebSocket] 연결됨');
+        setWsStatus(WebSocket.OPEN);
+        setRetryCount(0);
       });
 
       socket.addEventListener('message', (event) => {
@@ -91,13 +116,37 @@ export default function ChatDetailScreen() {
         console.error('[WebSocket] 오류 발생:', error);
       });
 
-      socket.addEventListener('close', () => {
-        console.log('[WebSocket] 연결 종료');
+      socket.addEventListener('close', (event) => {
+        console.log('[WebSocket] 연결 종료:', event.code, event.reason);
+        setWsStatus(WebSocket.CLOSED);
+
+        // 정상적인 종료(1000)가 아니면 재연결 시도
+        if (event.code !== 1000) {
+          handleReconnect();
+        }
       });
 
       ws.current = socket;
     } catch (error) {
-      console.error('[WebSocket] 연결 실패:', error);
+      console.error('[WebSocket] 연결 시도 중 오류:', error);
+      setWsStatus(WebSocket.CLOSED);
+      handleReconnect();
+    }
+  };
+
+  const handleReconnect = () => {
+    if (retryCount < MAX_RETRIES) {
+      const nextRetryCount = retryCount + 1;
+      setRetryCount(nextRetryCount);
+      console.log(`[WebSocket] 재연결 시도 (${nextRetryCount}/${MAX_RETRIES})...`);
+
+      // 지수 백오프 또는 단순 지연 (여기서는 2초)
+      retryTimerRef.current = setTimeout(() => {
+        connectWebSocket();
+      }, 2000);
+    } else {
+      setIsConnectionFailed(true);
+      Alert.alert('연결 오류', '서버와 연결할 수 없습니다. 나중에 다시 시도해주세요.');
     }
   };
 
@@ -155,9 +204,9 @@ export default function ChatDetailScreen() {
         text: '나가기',
         style: 'destructive',
         onPress: async () => {
-          if (typeof id === 'string' && currentUserId) {
+          if (typeof id === 'string' && currentUserId.current) {
             try {
-              await chatService.removeMember(id, currentUserId);
+              await chatService.removeMember(id, currentUserId.current);
               router.replace('/(tabs)/chats');
             } catch (error) {
               Alert.handleApiError(error, '채팅방 나가기 실패');
@@ -227,7 +276,7 @@ export default function ChatDetailScreen() {
     return `${period} ${displayHours}:${minutes.toString().padStart(2, '0')}`;
   };
 
-  const isCreator = chatRoom?.createdBy === currentUserId;
+  const isCreator = chatRoom?.createdBy === currentUserId.current;
 
   const renderMessage = ({ item, index }: { item: MessageResponse; index: number }) => {
     if (item.type === 'NOTIFICATION') {
@@ -238,7 +287,7 @@ export default function ChatDetailScreen() {
       );
     }
 
-    const isMyMessage = item.sender.id === currentUserId;
+    const isMyMessage = item.sender.id === currentUserId.current;
     const prevMessage = index > 0 ? messages[index - 1] : null;
     const showSender = !prevMessage || prevMessage.sender.id !== item.sender.id || !isMyMessage;
 
@@ -254,40 +303,82 @@ export default function ChatDetailScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Stack.Screen
         options={{
           title: chatRoom?.name || '채팅',
           headerShown: true,
           headerRight: () => (
-            <TouchableOpacity onPress={() => setIsDrawerOpen(true)} style={styles.headerButton}>
-              <IconSymbol name="line.3.horizontal" size={24} color={colors.gray[900]} />
-            </TouchableOpacity>
+            <View style={styles.headerRight}>
+              {wsStatus === WebSocket.CONNECTING && (
+                <View style={styles.statusIndicator}>
+                  <ThemedText style={styles.statusText}>연결 중...</ThemedText>
+                </View>
+              )}
+              <TouchableOpacity onPress={() => setIsDrawerOpen(true)} style={styles.headerButton}>
+                <IconSymbol name="line.3.horizontal" size={24} color={colors.gray[900]} />
+              </TouchableOpacity>
+            </View>
           ),
         }}
       />
 
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.flex1} keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}>
-        <FlatList
-          data={messages}
-          renderItem={renderMessage}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.messagesList}
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <ThemedText style={styles.emptyText}>메시지가 없습니다.</ThemedText>
-              <ThemedText style={styles.emptySubtext}>첫 메시지를 보내보세요!</ThemedText>
-            </View>
-          }
-        />
-
-        <View style={styles.inputContainer}>
-          <TextInput style={styles.input} placeholder="메시지를 입력하세요..." placeholderTextColor={colors.gray[400]} value={inputText} onChangeText={setInputText} multiline maxLength={1000} />
-          <TouchableOpacity style={[styles.sendButton, (!inputText.trim() || loading) && styles.sendButtonDisabled]} onPress={handleSend} disabled={!inputText.trim() || loading}>
-            <IconSymbol name="paperplane.fill" size={20} color={inputText.trim() && !loading ? '#fff' : colors.gray[300]} />
+      {isConnectionFailed ? (
+        <View style={styles.errorState}>
+          <IconSymbol name="wifi.slash" size={48} color={colors.gray[300]} />
+          <ThemedText style={styles.errorTitle}>연결에 실패했습니다</ThemedText>
+          <ThemedText style={styles.errorDescription}>
+            서버와의 연결이 원활하지 않습니다.{"\n"}인터넷 연결을 확인하고 다시 시도해주세요.
+          </ThemedText>
+          <TouchableOpacity
+            style={styles.retryButton}
+            onPress={() => {
+              setRetryCount(0);
+              connectWebSocket();
+            }}
+          >
+            <ThemedText style={styles.retryButtonText}>다시 연결하기</ThemedText>
           </TouchableOpacity>
         </View>
-      </KeyboardAvoidingView>
+      ) : (
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.flex1} keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}>
+          <FlatList
+            data={messages}
+            renderItem={renderMessage}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.messagesList}
+            onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
+            onLayout={() => flatListRef.current?.scrollToEnd({ animated: true })}
+            ref={flatListRef}
+            ListEmptyComponent={
+              <View style={styles.emptyContainer}>
+                <ThemedText style={styles.emptyText}>메시지가 없습니다.</ThemedText>
+                <ThemedText style={styles.emptySubtext}>첫 메시지를 보내보세요!</ThemedText>
+              </View>
+            }
+          />
+
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder={wsStatus === WebSocket.CONNECTING ? '연결 중...' : '메시지를 입력하세요...'}
+              placeholderTextColor={colors.gray[400]}
+              value={inputText}
+              onChangeText={setInputText}
+              multiline
+              maxLength={1000}
+              editable={wsStatus === WebSocket.OPEN}
+            />
+            <TouchableOpacity
+              style={[styles.sendButton, (!inputText.trim() || wsStatus !== WebSocket.OPEN) && styles.sendButtonDisabled]}
+              onPress={handleSend}
+              disabled={!inputText.trim() || wsStatus !== WebSocket.OPEN}
+            >
+              <IconSymbol name="paperplane.fill" size={20} color={inputText.trim() && wsStatus === WebSocket.OPEN ? '#fff' : colors.gray[300]} />
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      )}
 
       {/* Drawer Menu */}
       <Modal visible={isDrawerOpen} transparent animationType="none">
@@ -345,10 +436,10 @@ export default function ChatDetailScreen() {
                             <ThemedText style={styles.creatorBadgeText}>방장</ThemedText>
                           </View>
                         )}
-                        {member.id === currentUserId && <ThemedText style={styles.meLabel}>(나)</ThemedText>}
+                        {member.id === currentUserId.current && <ThemedText style={styles.meLabel}>(나)</ThemedText>}
                       </View>
 
-                      {isCreator && member.id !== currentUserId && (
+                      {isCreator && member.id !== currentUserId.current && (
                         <TouchableOpacity style={styles.kickButton} onPress={() => handleKickMember(member)}>
                           <IconSymbol name="person.fill.xmark" size={18} color={colors.error} />
                         </TouchableOpacity>
@@ -413,7 +504,7 @@ export default function ChatDetailScreen() {
           </View>
         </View>
       </Modal>
-    </ThemedView>
+    </SafeAreaView>
   );
 }
 
@@ -427,6 +518,22 @@ const styles = StyleSheet.create({
   },
   headerButton: {
     padding: spacing.sm,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  statusIndicator: {
+    backgroundColor: colors.gray[100],
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 4,
+    borderRadius: borderRadius.full,
+  },
+  statusText: {
+    fontSize: 10,
+    color: colors.gray[500],
+    fontWeight: fontWeight.bold,
   },
   messagesList: {
     paddingHorizontal: spacing.md,
@@ -755,5 +862,38 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: spacing.xl,
     paddingHorizontal: spacing.md,
+  },
+  errorState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: spacing.xl,
+    backgroundColor: colors.background.primary,
+  },
+  errorTitle: {
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.bold,
+    marginTop: spacing.lg,
+    color: colors.gray[900],
+  },
+  errorDescription: {
+    fontSize: fontSize.base,
+    color: colors.gray[500],
+    textAlign: 'center',
+    marginTop: spacing.sm,
+    marginBottom: spacing.xl,
+    lineHeight: 22,
+  },
+  retryButton: {
+    backgroundColor: colors.primary[600],
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.md,
+    borderRadius: borderRadius.full,
+    ...shadows.md,
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontSize: fontSize.base,
+    fontWeight: fontWeight.bold,
   },
 });
