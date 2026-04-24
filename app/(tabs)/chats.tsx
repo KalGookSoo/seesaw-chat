@@ -1,9 +1,9 @@
 import React, { useCallback, useState } from 'react';
-import { FlatList, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { router, useFocusEffect } from 'expo-router';
+import { borderRadius, colors, fontSize, fontWeight, shadows, spacing } from '@/constants/design';
 import { chatService } from '@/services/api';
 import type { ChatRoomExtended } from '@/services/mock-data';
-import { borderRadius, colors, fontSize, fontWeight, shadows, spacing } from '@/constants/design';
+import { router, useFocusEffect } from 'expo-router';
+import { FlatList, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function ChatsScreen() {
   const [chatRooms, setChatRooms] = useState<ChatRoomExtended[]>([]);

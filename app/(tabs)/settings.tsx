@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Switch, TouchableOpacity, View, ScrollView } from 'react-native';
 import { Alert } from '@/services/alert';
-import { router } from 'expo-router';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { IconSymbol } from '@/components/ui/icon-symbol';
 import { authService, pushService, userService } from '@/services/api';
 import type { UserResponse } from '@/services/mock-data';
+import { router } from 'expo-router';
+import { ScrollView, StyleSheet, Switch, TouchableOpacity, View } from 'react-native';
+
+import { IconSymbol } from '@/components/ui/icon-symbol';
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
 
 export default function SettingsScreen() {
   const [pushEnabled, setPushEnabled] = useState(true);

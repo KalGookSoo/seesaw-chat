@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { Alert } from '@/services/alert';
-import { router, useLocalSearchParams } from 'expo-router';
-import { authService } from '@/services/api';
 import { borderRadius, colors, fontSize, fontWeight, shadows, spacing } from '@/constants/design';
+import { Alert } from '@/services/alert';
+import { authService } from '@/services/api';
+import { router, useLocalSearchParams } from 'expo-router';
+import { KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function LoginScreen() {
   const { redirect } = useLocalSearchParams<{ redirect: string }>();

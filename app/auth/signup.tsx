@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { View, TextInput, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { Alert } from '@/services/alert';
+import { authService } from '@/services/api';
 import { router } from 'expo-router';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { authService } from '@/services/api';
 
 export default function SignupScreen() {
   const [username, setUsername] = useState('');
@@ -46,10 +47,7 @@ export default function SignupScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}
-    >
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <ThemedView style={styles.content}>
           <View style={styles.header}>
@@ -62,26 +60,12 @@ export default function SignupScreen() {
           <View style={styles.form}>
             <View style={styles.inputGroup}>
               <ThemedText style={styles.label}>아이디</ThemedText>
-              <TextInput
-                style={styles.input}
-                placeholder="아이디를 입력하세요"
-                placeholderTextColor="#999"
-                value={username}
-                onChangeText={setUsername}
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
+              <TextInput style={styles.input} placeholder="아이디를 입력하세요" placeholderTextColor="#999" value={username} onChangeText={setUsername} autoCapitalize="none" autoCorrect={false} />
             </View>
 
             <View style={styles.inputGroup}>
               <ThemedText style={styles.label}>이름</ThemedText>
-              <TextInput
-                style={styles.input}
-                placeholder="이름을 입력하세요"
-                placeholderTextColor="#999"
-                value={name}
-                onChangeText={setName}
-              />
+              <TextInput style={styles.input} placeholder="이름을 입력하세요" placeholderTextColor="#999" value={name} onChangeText={setName} />
             </View>
 
             <View style={styles.inputGroup}>
@@ -110,20 +94,11 @@ export default function SignupScreen() {
               />
             </View>
 
-            <TouchableOpacity
-              style={[styles.button, styles.primaryButton, loading && styles.buttonDisabled]}
-              onPress={handleSignup}
-              disabled={loading}
-            >
-              <ThemedText style={styles.primaryButtonText}>
-                {loading ? '가입 중...' : '가입하기'}
-              </ThemedText>
+            <TouchableOpacity style={[styles.button, styles.primaryButton, loading && styles.buttonDisabled]} onPress={handleSignup} disabled={loading}>
+              <ThemedText style={styles.primaryButtonText}>{loading ? '가입 중...' : '가입하기'}</ThemedText>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[styles.button, styles.secondaryButton]}
-              onPress={() => router.back()}
-            >
+            <TouchableOpacity style={[styles.button, styles.secondaryButton]} onPress={() => router.back()}>
               <ThemedText style={styles.secondaryButtonText}>취소</ThemedText>
             </TouchableOpacity>
           </View>

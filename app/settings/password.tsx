@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import { borderRadius, colors, fontSize, fontWeight, shadows, spacing } from '@/constants/design';
+import { Alert } from '@/services/alert';
+import { authService, userService } from '@/services/api';
 import { router } from 'expo-router';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+
+import { IconSymbol } from '@/components/ui/icon-symbol';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { authService, userService } from '@/services/api';
-import { Alert } from '@/services/alert';
-import { borderRadius, colors, fontSize, fontWeight, shadows, spacing } from '@/constants/design';
 
 export default function PasswordChangeScreen() {
   const [newPassword, setNewPassword] = useState('');

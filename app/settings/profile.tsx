@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import { borderRadius, colors, fontSize, fontWeight, shadows, spacing } from '@/constants/design';
+import { Alert } from '@/services/alert';
+import { authService, userService } from '@/services/api';
 import { router } from 'expo-router';
+import { ActivityIndicator, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+
+import { IconSymbol } from '@/components/ui/icon-symbol';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { authService, userService } from '@/services/api';
-import { Alert } from '@/services/alert';
-import { borderRadius, colors, fontSize, fontWeight, shadows, spacing } from '@/constants/design';
 
 export default function ProfileEditScreen() {
   const [userId, setUserId] = useState<string | null>(null);

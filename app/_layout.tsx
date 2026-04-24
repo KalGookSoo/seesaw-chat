@@ -2,10 +2,12 @@ import { useEffect } from 'react';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+
 import 'react-native-reanimated';
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { setCurrentPathname } from '@/services/api-client';
+
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export const unstable_settings = {
   // 네이티브 앱 딥링크 미적용 시 초기 화면 (웹에서는 URL로 결정되므로 무관)

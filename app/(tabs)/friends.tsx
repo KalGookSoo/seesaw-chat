@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { FlatList, Modal, RefreshControl, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { router } from 'expo-router';
+import { borderRadius, colors, fontSize, fontWeight, shadows, spacing } from '@/constants/design';
 import { Alert } from '@/services/alert';
 import { chatService, friendService } from '@/services/api';
 import type { FriendResponse, UserResponse } from '@/services/mock-data';
+import { router } from 'expo-router';
+import { FlatList, Modal, RefreshControl, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { borderRadius, colors, fontSize, fontWeight, shadows, spacing } from '@/constants/design';
 
 export default function FriendsScreen() {
   const [friends, setFriends] = useState<FriendResponse[]>([]);
