@@ -27,7 +27,6 @@ export interface UserSearch {
   name?: string;
 }
 
-
 export interface SenderResponse {
   id: string;
   name: string;
@@ -42,6 +41,13 @@ export interface FriendResponse {
 export interface ChatRoomResponse {
   id: string;
   name: string;
+  createdBy?: string;
+  createdDate?: string;
+  members?: UserResponse[];
+}
+
+export interface ChatRoomMemberAddRequest {
+  memberIds: string[];
 }
 
 export interface MessageResponse {

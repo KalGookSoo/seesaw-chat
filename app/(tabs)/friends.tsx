@@ -138,7 +138,7 @@ export default function FriendsScreen() {
       // 새 채팅방으로 이동
       router.push({
         pathname: '/chat/[id]',
-        params: { id: newRoom.id, name: newRoom.name || '채팅방' },
+        params: { id: newRoom.id },
       });
     } catch (error: any) {
       Alert.handleApiError(error, '채팅방 생성 실패');

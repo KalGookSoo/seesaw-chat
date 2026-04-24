@@ -10,37 +10,37 @@ info:
     url: https://www.apache.org/licenses/LICENSE-2.0
   version: 0.0.1
 servers:
-- url: /
-  description: Default Server URL
+  - url: /
+    description: Default Server URL
 security:
-- Bearer Authentication: []
+  - Bearer Authentication: [ ]
 tags:
-- name: 사용자 API
-  description: 사용자 정보 조회 및 검색 API
-- name: 친구 API
-  description: 친구 관리 및 상태 관리 API
-- name: 인증 API
-  description: "회원가입, 로그인 및 토큰 관리를 담당합니다."
-- name: 채팅방 API
-  description: 채팅방 조회 및 관리를 담당합니다.
-- name: 메시지 API
-  description: 메시지 이력 조회를 담당합니다.
-- name: 웹 푸시 구독 API
-  description: 브라우저별 웹 푸시 구독 정보를 관리합니다.
+  - name: 사용자 API
+    description: 사용자 정보 조회 및 검색 API
+  - name: 친구 API
+    description: 친구 관리 및 상태 관리 API
+  - name: 인증 API
+    description: "회원가입, 로그인 및 토큰 관리를 담당합니다."
+  - name: 채팅방 API
+    description: 채팅방 조회 및 관리를 담당합니다.
+  - name: 메시지 API
+    description: 메시지 이력 조회를 담당합니다.
+  - name: 웹 푸시 구독 API
+    description: 브라우저별 웹 푸시 구독 정보를 관리합니다.
 paths:
   /api/users/{userId}:
     get:
       tags:
-      - 사용자 API
+        - 사용자 API
       summary: 사용자 상세 조회
       description: 특정 사용자의 상세 정보 및 권한 목록을 조회합니다.
       operationId: getUserDetail
       parameters:
-      - name: userId
-        in: path
-        required: true
-        schema:
-          type: string
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
       responses:
         "200":
           description: OK
@@ -50,16 +50,16 @@ paths:
                 $ref: "#/components/schemas/UserResponse"
     put:
       tags:
-      - 사용자 API
+        - 사용자 API
       summary: 사용자 기본정보 수정
       description: 계정 정보를 수정합니다.
       operationId: updateProfile
       parameters:
-      - name: userId
-        in: path
-        required: true
-        schema:
-          type: string
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
@@ -72,23 +72,23 @@ paths:
   /api/friends/{friendId}/accept:
     put:
       tags:
-      - 친구 API
+        - 친구 API
       summary: 친구 수락
       description: 나에게 온 친구 요청을 수락합니다.
       operationId: acceptFriend
       parameters:
-      - name: friendId
-        in: path
-        required: true
-        schema:
-          type: string
+        - name: friendId
+          in: path
+          required: true
+          schema:
+            type: string
       responses:
         "200":
           description: OK
   /api/token/refresh:
     post:
       tags:
-      - 인증 API
+        - 인증 API
       summary: 토큰 갱신
       description: 리프레시 토큰을 사용하여 새로운 액세스 토큰을 발급합니다.
       operationId: refreshToken
@@ -114,7 +114,7 @@ paths:
   /api/sign-up:
     post:
       tags:
-      - 인증 API
+        - 인증 API
       summary: 회원가입
       description: 새로운 사용자를 등록합니다.
       operationId: signUp
@@ -130,7 +130,7 @@ paths:
   /api/sign-out:
     post:
       tags:
-      - 인증 API
+        - 인증 API
       summary: 로그아웃
       description: 액세스 토큰과 리프레시 토큰을 파기합니다.
       operationId: signOut
@@ -146,7 +146,7 @@ paths:
   /api/sign-in:
     post:
       tags:
-      - 인증 API
+        - 인증 API
       summary: 로그인
       description: 사용자 인증을 수행하고 JWT 토큰을 발급합니다.
       operationId: signIn
@@ -172,7 +172,7 @@ paths:
   /api/push/subscriptions:
     post:
       tags:
-      - 웹 푸시 구독 API
+        - 웹 푸시 구독 API
       summary: 푸시 구독 등록/갱신
       description: 새로운 구독 정보를 등록하거나 기존 정보를 갱신합니다.
       operationId: subscribe
@@ -191,23 +191,23 @@ paths:
                 $ref: "#/components/schemas/PushSubscriptionResponse"
     delete:
       tags:
-      - 웹 푸시 구독 API
+        - 웹 푸시 구독 API
       summary: 푸시 구독 취소
       description: 기존 구독 정보를 삭제합니다.
       operationId: unsubscribe
       parameters:
-      - name: endpoint
-        in: query
-        required: true
-        schema:
-          type: string
+        - name: endpoint
+          in: query
+          required: true
+          schema:
+            type: string
       responses:
         "200":
           description: OK
   /api/friends/request:
     post:
       tags:
-      - 친구 API
+        - 친구 API
       summary: 친구 요청
       description: 상대방의 userId로 친구 요청을 보냅니다.
       operationId: requestFriend
@@ -223,7 +223,7 @@ paths:
   /api/chat-rooms:
     get:
       tags:
-      - 채팅방 API
+        - 채팅방 API
       summary: 참여 중인 채팅방 목록 조회
       description: 현재 로그인한 사용자가 참여 중인 채팅방 목록을 반환합니다.
       operationId: getChatRooms
@@ -238,7 +238,7 @@ paths:
                   $ref: "#/components/schemas/ChatRoomResponse"
     post:
       tags:
-      - 채팅방 API
+        - 채팅방 API
       summary: 채팅방 생성
       description: 새로운 채팅방을 생성하고 친구들을 초대합니다.
       operationId: createChatRoom
@@ -255,19 +255,41 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/ChatRoomResponse"
+  /api/chat-rooms/{chatRoomId}/members:
+    post:
+      tags:
+        - 채팅방 API
+      summary: 채팅방 멤버 추가
+      description: 채팅방에 새로운 멤버를 추가합니다.
+      operationId: addMembers
+      parameters:
+        - name: chatRoomId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatRoomMemberAddRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
   /api/users/{userId}/password:
     patch:
       tags:
-      - 사용자 API
+        - 사용자 API
       summary: 패스워드 변경
       description: 계정의 패스워드를 변경합니다.
       operationId: changePassword
       parameters:
-      - name: userId
-        in: path
-        required: true
-        schema:
-          type: string
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
@@ -280,16 +302,16 @@ paths:
   /api/users:
     get:
       tags:
-      - 사용자 API
+        - 사용자 API
       summary: 사용자 검색
       description: 친구 추가를 위해 사용자를 검색합니다. 계정명(username) 또는 이름(name)으로 검색 가능합니다.
       operationId: searchUsers
       parameters:
-      - name: search
-        in: query
-        required: true
-        schema:
-          $ref: "#/components/schemas/UserSearch"
+        - name: search
+          in: query
+          required: true
+          schema:
+            $ref: "#/components/schemas/UserSearch"
       responses:
         "200":
           description: OK
@@ -302,33 +324,33 @@ paths:
   /api/messages:
     get:
       tags:
-      - 메시지 API
+        - 메시지 API
       summary: 메시지 목록 조회
       description: 특정 채팅방의 메시지 이력을 페이징하여 조회합니다.
       operationId: getMessages
       parameters:
-      - name: chatRoomId
-        in: query
-        description: 채팅방 식별자
-        required: true
-        schema:
-          type: string
-      - name: pageNumber
-        in: query
-        description: 페이지 번호
-        required: false
-        schema:
-          type: integer
-          format: int32
-          default: 0
-      - name: pageSize
-        in: query
-        description: 페이지 크기
-        required: false
-        schema:
-          type: integer
-          format: int32
-          default: 30
+        - name: chatRoomId
+          in: query
+          description: 채팅방 식별자
+          required: true
+          schema:
+            type: string
+        - name: pageNumber
+          in: query
+          description: 페이지 번호
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: pageSize
+          in: query
+          description: 페이지 크기
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 30
       responses:
         "200":
           description: OK
@@ -339,7 +361,7 @@ paths:
   /api/friends:
     get:
       tags:
-      - 친구 API
+        - 친구 API
       summary: 친구 목록 조회
       description: 친구 목록을 조회합니다.
       operationId: getFriends
@@ -352,19 +374,60 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/FriendResponse"
+  /api/chat-rooms/{chatRoomId}:
+    get:
+      tags:
+        - 채팅방 API
+      summary: 채팅방 상세 조회
+      description: 특정 채팅방의 상세 정보와 참여자 목록을 조회합니다.
+      operationId: getChatRoom
+      parameters:
+        - name: chatRoomId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ChatRoomResponse"
   /api/friends/{friendId}:
     delete:
       tags:
-      - 친구 API
+        - 친구 API
       summary: 친구 삭제/거절
       description: 친구 관계를 삭제하거나 요청을 거절합니다.
       operationId: removeFriend
       parameters:
-      - name: friendId
-        in: path
-        required: true
-        schema:
-          type: string
+        - name: friendId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+  /api/chat-rooms/{chatRoomId}/members/{memberId}:
+    delete:
+      tags:
+        - 채팅방 API
+      summary: 채팅방 멤버 제거
+      description: 채팅방에서 멤버를 제거하거나 본인이 나갑니다.
+      operationId: removeMember
+      parameters:
+        - name: chatRoomId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: memberId
+          in: path
+          required: true
+          schema:
+            type: string
       responses:
         "200":
           description: OK
@@ -379,7 +442,7 @@ components:
           description: 이름
           minLength: 1
       required:
-      - name
+        - name
     TokenRefreshRequest:
       type: object
       description: 토큰 갱신 요청
@@ -389,7 +452,7 @@ components:
           description: 리프레시 토큰
           minLength: 1
       required:
-      - refreshToken
+        - refreshToken
     JsonWebToken:
       type: object
       description: JWT 토큰 정보
@@ -420,8 +483,8 @@ components:
           type: string
           description: 이름
       required:
-      - password
-      - username
+        - password
+        - username
     TokenRevokeRequest:
       type: object
       description: 토큰 파기 요청
@@ -435,8 +498,8 @@ components:
           description: 리프레시 토큰
           minLength: 1
       required:
-      - accessToken
-      - refreshToken
+        - accessToken
+        - refreshToken
     SignInRequest:
       type: object
       description: 로그인 요청
@@ -450,8 +513,8 @@ components:
           description: 패스워드
           minLength: 1
       required:
-      - password
-      - username
+        - password
+        - username
     PushSubscriptionRequest:
       type: object
       description: 웹 푸시 구독 등록 요청
@@ -473,7 +536,7 @@ components:
           type: string
           description: 기기 명칭
       required:
-      - endpoint
+        - endpoint
     PushSubscriptionResponse:
       type: object
       description: 웹 푸시 구독 정보 응답
@@ -523,12 +586,12 @@ components:
           type: array
           description: 초대할 친구 ID 목록
           example:
-          - user-uuid-1
-          - user-uuid-2
+            - user-uuid-1
+            - user-uuid-2
           items:
             type: string
       required:
-      - name
+        - name
     ChatRoomResponse:
       type: object
       description: 채팅방 응답
@@ -539,26 +602,18 @@ components:
         name:
           type: string
           description: 채팅방 이름
-    PasswordChangeRequest:
-      type: object
-      description: 패스워드 변경 요청
-      properties:
-        newPassword:
+        createdBy:
           type: string
-          description: 새 패스워드
-          minLength: 1
-      required:
-      - newPassword
-    UserSearch:
-      type: object
-      description: 사용자 검색 조건
-      properties:
-        username:
+          description: 생성자 식별자
+        createdDate:
           type: string
-          description: 계정명
-        name:
-          type: string
-          description: 이름
+          format: date-time
+          description: 생성 일시
+        members:
+          type: array
+          description: 참여자 목록
+          items:
+            $ref: "#/components/schemas/UserResponse"
     UserResponse:
       type: object
       description: 사용자 정보 응답
@@ -597,6 +652,39 @@ components:
           items:
             type: string
           uniqueItems: true
+    ChatRoomMemberAddRequest:
+      type: object
+      description: 채팅방 멤버 추가 요청
+      properties:
+        memberIds:
+          type: array
+          description: 추가할 사용자 식별자 목록
+          items:
+            type: string
+            minLength: 1
+          minItems: 1
+      required:
+        - memberIds
+    PasswordChangeRequest:
+      type: object
+      description: 패스워드 변경 요청
+      properties:
+        newPassword:
+          type: string
+          description: 새 패스워드
+          minLength: 1
+      required:
+        - newPassword
+    UserSearch:
+      type: object
+      description: 사용자 검색 조건
+      properties:
+        username:
+          type: string
+          description: 계정명
+        name:
+          type: string
+          description: 이름
     MessageResponse:
       type: object
       description: 메시지 응답
@@ -614,8 +702,8 @@ components:
           type: string
           description: 메시지 타입
           enum:
-          - CHAT
-          - NOTIFICATION
+            - CHAT
+            - NOTIFICATION
         mimeType:
           type: string
           description: MIME 타입
@@ -674,9 +762,9 @@ components:
           type: string
           description: 상태
           enum:
-          - PENDING
-          - ACCEPTED
-          - BLOCKED
+            - PENDING
+            - ACCEPTED
+            - BLOCKED
   securitySchemes:
     Bearer Authentication:
       type: http

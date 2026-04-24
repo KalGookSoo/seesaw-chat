@@ -11,7 +11,7 @@ export function setCurrentPathname(path: string) {
 
 // 서버 기본 URL — 환경에 따라 변경하세요.
 // 예: 'http://localhost:8080' 또는 process.env.EXPO_PUBLIC_API_URL
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:8080';
+export const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:8080';
 
 let isRefreshing = false;
 let refreshSubscribers: ((token: string) => void)[] = [];
@@ -156,12 +156,12 @@ export async function request<T = void>(path: string, options: RequestInit & { s
         }
         // 갱신 실패 시 토큰 삭제 및 리디렉션
         await tokenStorage.clearTokens();
-        
+
         // 로그인/회원가입 페이지가 아닐 때만 리디렉션 (무한 루프 방지)
         if (currentPathname !== '/' && !currentPathname.startsWith('/auth')) {
           router.replace(`/?redirect=${encodeURIComponent(currentPathname)}`);
         }
-        
+
         throw new ApiError(401, '세션이 만료되었습니다. 다시 로그인해주세요.', body);
       }
 

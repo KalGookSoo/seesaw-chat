@@ -4,7 +4,6 @@
  */
 import { apiClient, decodeJwt } from './api-client';
 import { tokenStorage } from './storage';
-import { router } from 'expo-router';
 import type { ChatRoomExtended, ChatRoomResponse, FriendResponse, JsonWebToken, MessageResponse, PagedModelMessageResponse, PushSubscriptionResponse, UserResponse } from './mock-data';
 
 // ─────────────────────────────────────────────
@@ -160,6 +159,15 @@ export const chatService = {
   /** GET /api/messages?chatRoomId=&pageNumber=&pageSize= → PagedModelMessageResponse */
   getMessages: (chatRoomId: string, pageNumber: number = 0, pageSize: number = 30): Promise<PagedModelMessageResponse> =>
     apiClient.get<PagedModelMessageResponse>(`/api/messages?chatRoomId=${encodeURIComponent(chatRoomId)}&pageNumber=${pageNumber}&pageSize=${pageSize}`),
+
+  /** GET /api/chat-rooms/{chatRoomId} → ChatRoomResponse (채팅방 상세 조회) */
+  getChatRoom: (chatRoomId: string): Promise<ChatRoomResponse> => apiClient.get<ChatRoomResponse>(`/api/chat-rooms/${chatRoomId}`),
+
+  /** POST /api/chat-rooms/{chatRoomId}/members → void (멤버 초대) */
+  addMembers: (chatRoomId: string, memberIds: string[]): Promise<void> => apiClient.post<void>(`/api/chat-rooms/${chatRoomId}/members`, { memberIds }),
+
+  /** DELETE /api/chat-rooms/{chatRoomId}/members/{memberId} → void (멤버 추방 또는 나가기) */
+  removeMember: (chatRoomId: string, memberId: string): Promise<void> => apiClient.delete<void>(`/api/chat-rooms/${chatRoomId}/members/${memberId}`),
 
   /**
    * 메시지 전송 — WebSocket/STOMP를 통해 처리해야 하는 기능입니다.

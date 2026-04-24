@@ -1,9 +1,9 @@
 import React, { useCallback, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, RefreshControl } from 'react-native';
+import { FlatList, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { chatService } from '@/services/api';
 import type { ChatRoomExtended } from '@/services/mock-data';
-import { colors, spacing, borderRadius, fontSize, fontWeight, shadows } from '@/constants/design';
+import { borderRadius, colors, fontSize, fontWeight, shadows, spacing } from '@/constants/design';
 
 export default function ChatsScreen() {
   const [chatRooms, setChatRooms] = useState<ChatRoomExtended[]>([]);
@@ -12,7 +12,7 @@ export default function ChatsScreen() {
   useFocusEffect(
     useCallback(() => {
       loadChatRooms();
-    }, [])
+    }, []),
   );
 
   const loadChatRooms = async () => {
@@ -33,7 +33,7 @@ export default function ChatsScreen() {
   const handleRoomPress = (room: ChatRoomExtended) => {
     router.push({
       pathname: '/chat/[id]',
-      params: { id: room.id, name: room.name || '채팅방' },
+      params: { id: room.id },
     });
   };
 
