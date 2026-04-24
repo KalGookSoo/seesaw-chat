@@ -1,14 +1,15 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Dimensions, FlatList, KeyboardAvoidingView, Modal, Platform, Pressable, SafeAreaView, ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
-import { Alert } from '@/services/alert';
-import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { ThemedText } from '@/components/themed-text';
-import { authService, chatService, friendService } from '@/services/api';
-import { tokenStorage } from '@/services/storage';
-import type { ChatRoomResponse, FriendResponse, MessageResponse, UserResponse } from '@/services/mock-data';
-import { IconSymbol } from '@/components/ui/icon-symbol';
 import { borderRadius, colors, fontSize, fontWeight, shadows, spacing } from '@/constants/design';
+import { Alert } from '@/services/alert';
+import { authService, chatService, friendService } from '@/services/api';
 import { BASE_URL } from '@/services/api-client';
+import type { ChatRoomResponse, FriendResponse, MessageResponse, UserResponse } from '@/services/mock-data';
+import { tokenStorage } from '@/services/storage';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { Dimensions, FlatList, KeyboardAvoidingView, Modal, Platform, Pressable, SafeAreaView, ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+
+import { IconSymbol } from '@/components/ui/icon-symbol';
+import { ThemedText } from '@/components/themed-text';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -36,17 +37,6 @@ export default function ChatDetailScreen() {
   // Mocks for feature toggles
   const [isNotificationsEnabled, setIsNotificationsEnabled] = useState(true);
   const [isFavorite, setIsFavorite] = useState(false);
-
-  useEffect(() => {
-    isMounted.current = true;
-    loadInitialData();
-    connectWebSocket();
-
-    return () => {
-      isMounted.current = false;
-      cleanupWebSocket();
-    };
-  }, [id, loadInitialData, connectWebSocket, cleanupWebSocket]);
 
   const cleanupWebSocket = useCallback(() => {
     if (ws.current) {
@@ -109,7 +99,7 @@ export default function ChatDetailScreen() {
       setIsConnectionFailed(true);
       Alert.alert('연결 오류', '서버와 연결할 수 없습니다. 나중에 다시 시도해주세요.');
     }
-  }, [connectWebSocket]);
+  }, []);
 
   const connectWebSocket = useCallback(async () => {
     if (typeof id !== 'string') return;
@@ -120,7 +110,7 @@ export default function ChatDetailScreen() {
       const token = await tokenStorage.getAccessToken();
       const baseUrl = BASE_URL.replace(/\/$/, '');
       const wsBaseUrl = baseUrl.replace(/^http/, 'ws');
-      const wsUrl = `${wsBaseUrl}/chat?chatRoomId=${id}&token=${token}`;
+      const wsUrl = `${wsBaseUrl}/chat?chatRoomId=${id}&accessToken=${token}`;
 
       const socket = new WebSocket(wsUrl);
 
@@ -297,6 +287,17 @@ export default function ChatDetailScreen() {
       </View>
     );
   };
+
+  useEffect(() => {
+    isMounted.current = true;
+    loadInitialData();
+    connectWebSocket();
+
+    return () => {
+      isMounted.current = false;
+      cleanupWebSocket();
+    };
+  }, [id, loadInitialData, connectWebSocket, cleanupWebSocket]);
 
   return (
     <SafeAreaView style={styles.container}>

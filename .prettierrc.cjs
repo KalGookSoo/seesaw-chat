@@ -34,4 +34,26 @@ module.exports = {
 
   // 객체 속성명에 따옴표를 꼭 필요한 경우에만 사용
   quoteProps: 'as-needed',
+  plugins: ['@ianvs/prettier-plugin-sort-imports'],
+  importOrder: [
+    '<BUILTIN_MODULES>',
+    '',
+    '^(react/(.*)$)|^(react$)',
+    '^(next/(.*)$)|^(next$)',
+    '<THIRD_PARTY_MODULES>',
+    '',
+    '^types$',
+    '^@/types/(.*)$',
+    '^@/config/(.*)$',
+    '^@/lib/(.*)$',
+    '^@/hooks/(.*)$',
+    '^@/components/ui/(.*)$',
+    '^@/components/(.*)$',
+    '^@/registry/(.*)$',
+    '^@/styles/(.*)$',
+    '^@/app/(.*)$',
+    '',
+    '^[./]',
+  ],
+  importOrderParserPlugins: ['typescript', 'jsx', 'decorators-legacy'],
 };
