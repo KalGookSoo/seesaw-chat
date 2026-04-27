@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { borderRadius, colors, fontSize, fontWeight, shadows, spacing } from '@/constants/design';
 import { Alert } from '@/services/alert';
-import { chatService, friendService } from '@/services/api';
+import { authService, chatService, friendService } from '@/services/api';
 import type { FriendResponse, UserResponse } from '@/services/mock-data';
 import { router } from 'expo-router';
 import { FlatList, Modal, RefreshControl, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
@@ -9,6 +9,8 @@ import { FlatList, Modal, RefreshControl, ScrollView, StyleSheet, Text, TextInpu
 import { IconSymbol } from '@/components/ui/icon-symbol';
 
 export default function FriendsScreen() {
+  const [activeTab, setActiveTab] = useState<'ACCEPTED' | 'PENDING' | 'BLOCKED'>('ACCEPTED');
+  const [myUserId, setMyUserId] = useState<string | null>(null);
   const [friends, setFriends] = useState<FriendResponse[]>([]);
   const [pendingRequests, setPendingRequests] = useState<FriendResponse[]>([]);
   const [blockedFriends, setBlockedFriends] = useState<FriendResponse[]>([]);
@@ -24,7 +26,12 @@ export default function FriendsScreen() {
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   useEffect(() => {
-    loadData();
+    const init = async () => {
+      const userId = await authService.getCurrentUserId();
+      setMyUserId(userId);
+      await loadData();
+    };
+    init();
   }, []);
 
   const loadData = async () => {
@@ -59,7 +66,7 @@ export default function FriendsScreen() {
       await friendService.rejectFriendRequest(friend.friend.id);
       await loadData();
     } catch (error: any) {
-      Alert.handleApiError(error, '요청 거절 실패');
+      Alert.handleApiError(error, '요청 거절/취소 실패');
     }
   };
 
@@ -176,40 +183,46 @@ export default function FriendsScreen() {
     </TouchableOpacity>
   );
 
-  const renderPendingItem = ({ item }: { item: FriendResponse }) => (
-    <TouchableOpacity style={styles.pendingCard} onPress={() => handleShowDetail(item.friend.id)} activeOpacity={0.7}>
-      <View style={styles.avatar}>
-        <Text style={styles.avatarText}>{item.friend.name[0]}</Text>
-      </View>
-      <View style={styles.friendInfo}>
-        <Text style={styles.friendName}>{item.friend.name}</Text>
-        <Text style={styles.friendUsername}>@{item.friend.username}</Text>
-        <Text style={styles.statusLabel}>수락 대기 중</Text>
-      </View>
-      <View style={styles.pendingActions}>
-        <TouchableOpacity
-          style={styles.acceptButton}
-          onPress={(e) => {
-            e.stopPropagation();
-            handleAcceptRequest(item);
-          }}
-          activeOpacity={0.8}
-        >
-          <IconSymbol name="checkmark" size={16} color="#fff" />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.rejectButton}
-          onPress={(e) => {
-            e.stopPropagation();
-            handleRejectRequest(item);
-          }}
-          activeOpacity={0.8}
-        >
-          <IconSymbol name="xmark" size={16} color={colors.gray[600]} />
-        </TouchableOpacity>
-      </View>
-    </TouchableOpacity>
-  );
+  const renderPendingItem = ({ item }: { item: FriendResponse }) => {
+    const isSentByMe = item.userId === myUserId;
+
+    return (
+      <TouchableOpacity style={[styles.pendingCard, isSentByMe && styles.sentCard]} onPress={() => handleShowDetail(item.friend.id)} activeOpacity={0.7}>
+        <View style={styles.avatar}>
+          <Text style={styles.avatarText}>{item.friend.name[0]}</Text>
+        </View>
+        <View style={styles.friendInfo}>
+          <Text style={styles.friendName}>{item.friend.name}</Text>
+          <Text style={styles.friendUsername}>@{item.friend.username}</Text>
+          <Text style={styles.statusLabel}>{isSentByMe ? '보낸 요청' : '받은 요청'}</Text>
+        </View>
+        <View style={styles.pendingActions}>
+          {!isSentByMe && (
+            <TouchableOpacity
+              style={styles.acceptButton}
+              onPress={(e) => {
+                e.stopPropagation();
+                handleAcceptRequest(item);
+              }}
+              activeOpacity={0.8}
+            >
+              <IconSymbol name="checkmark" size={16} color="#fff" />
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity
+            style={styles.rejectButton}
+            onPress={(e) => {
+              e.stopPropagation();
+              handleRejectRequest(item);
+            }}
+            activeOpacity={0.8}
+          >
+            <IconSymbol name={isSentByMe ? 'trash' : 'xmark'} size={16} color={colors.gray[600]} />
+          </TouchableOpacity>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   const renderSearchResult = ({ item }: { item: UserResponse }) => (
     <TouchableOpacity style={styles.searchResultCard} onPress={() => handleShowDetail(item.id)} activeOpacity={0.7}>
@@ -265,43 +278,90 @@ export default function FriendsScreen() {
         </View>
       )}
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}>
-        {/* Pending Requests */}
-        {pendingRequests.length > 0 && (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>받은 요청</Text>
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>{pendingRequests.length}</Text>
-              </View>
+      {/* Tabs */}
+      <View style={styles.tabBar}>
+        <TouchableOpacity style={[styles.tab, activeTab === 'ACCEPTED' && styles.activeTab]} onPress={() => setActiveTab('ACCEPTED')}>
+          <Text style={[styles.tabText, activeTab === 'ACCEPTED' && styles.activeTabText]}>친구</Text>
+          {friends.length > 0 && (
+            <View style={styles.tabBadge}>
+              <Text style={styles.tabBadgeText}>{friends.length}</Text>
             </View>
-            {pendingRequests.map((item) => (
-              <View key={item.friend.id}>{renderPendingItem({ item })}</View>
-            ))}
+          )}
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.tab, activeTab === 'PENDING' && styles.activeTab]} onPress={() => setActiveTab('PENDING')}>
+          <Text style={[styles.tabText, activeTab === 'PENDING' && styles.activeTabText]}>요청</Text>
+          {pendingRequests.length > 0 && (
+            <View style={[styles.tabBadge, styles.pendingBadge]}>
+              <Text style={[styles.tabBadgeText, styles.tabBadgeTextLight]}>{pendingRequests.length}</Text>
+            </View>
+          )}
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.tab, activeTab === 'BLOCKED' && styles.activeTab]} onPress={() => setActiveTab('BLOCKED')}>
+          <Text style={[styles.tabText, activeTab === 'BLOCKED' && styles.activeTabText]}>차단</Text>
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}>
+        {activeTab === 'ACCEPTED' && (
+          <View style={styles.section}>
+            {friends.length === 0 ? (
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyIcon}>👋</Text>
+                <Text style={styles.emptyTitle}>아직 친구가 없습니다</Text>
+                <Text style={styles.emptySubtitle}>친구를 추가하여 채팅을 시작해보세요!</Text>
+              </View>
+            ) : (
+              friends.map((item) => <View key={item.friend.id}>{renderFriendItem({ item })}</View>)
+            )}
           </View>
         )}
 
-        {/* Friends List */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>내 친구</Text>
-          {friends.length === 0 ? (
-            <View style={styles.emptyState}>
-              <Text style={styles.emptyIcon}>👋</Text>
-              <Text style={styles.emptyTitle}>아직 친구가 없습니다</Text>
-              <Text style={styles.emptySubtitle}>친구를 추가하여 채팅을 시작해보세요!</Text>
-            </View>
-          ) : (
-            friends.map((item) => <View key={item.friend.id}>{renderFriendItem({ item })}</View>)
-          )}
-        </View>
-
-        {/* Blocked List */}
-        {blockedFriends.length > 0 && (
+        {activeTab === 'PENDING' && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>차단된 사용자</Text>
-            {blockedFriends.map((item) => (
-              <View key={item.friend.id}>{renderFriendItem({ item })}</View>
-            ))}
+            {pendingRequests.length === 0 ? (
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyIcon}>✉️</Text>
+                <Text style={styles.emptyTitle}>대기 중인 요청이 없습니다</Text>
+                <Text style={styles.emptySubtitle}>새로운 친구를 찾아보세요!</Text>
+              </View>
+            ) : (
+              <>
+                {pendingRequests.some((r) => r.userId !== myUserId) && (
+                  <View style={styles.subSection}>
+                    <Text style={styles.subSectionTitle}>받은 요청</Text>
+                    {pendingRequests
+                      .filter((r) => r.userId !== myUserId)
+                      .map((item) => (
+                        <View key={item.friend.id}>{renderPendingItem({ item })}</View>
+                      ))}
+                  </View>
+                )}
+
+                {pendingRequests.some((r) => r.userId === myUserId) && (
+                  <View style={styles.subSection}>
+                    <Text style={styles.subSectionTitle}>보낸 요청</Text>
+                    {pendingRequests
+                      .filter((r) => r.userId === myUserId)
+                      .map((item) => (
+                        <View key={item.friend.id}>{renderPendingItem({ item })}</View>
+                      ))}
+                  </View>
+                )}
+              </>
+            )}
+          </View>
+        )}
+
+        {activeTab === 'BLOCKED' && (
+          <View style={styles.section}>
+            {blockedFriends.length === 0 ? (
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyIcon}>🚫</Text>
+                <Text style={styles.emptyTitle}>차단된 사용자가 없습니다</Text>
+              </View>
+            ) : (
+              blockedFriends.map((item) => <View key={item.friend.id}>{renderFriendItem({ item })}</View>)
+            )}
           </View>
         )}
       </ScrollView>
@@ -861,5 +921,69 @@ const styles = StyleSheet.create({
     fontSize: fontSize.base,
     color: '#fff',
     fontWeight: fontWeight.bold,
+  },
+  tabBar: {
+    flexDirection: 'row',
+    backgroundColor: colors.background.primary,
+    paddingHorizontal: spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.gray[100],
+  },
+  tab: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.md,
+    gap: spacing.xs,
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+  },
+  activeTab: {
+    borderBottomColor: colors.primary[600],
+  },
+  tabText: {
+    fontSize: fontSize.base,
+    fontWeight: fontWeight.semibold,
+    color: colors.gray[500],
+  },
+  activeTabText: {
+    color: colors.primary[600],
+  },
+  tabBadge: {
+    backgroundColor: colors.gray[200],
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: borderRadius.full,
+    minWidth: 18,
+    alignItems: 'center',
+  },
+  tabBadgeText: {
+    color: colors.gray[600],
+    fontSize: 10,
+    fontWeight: fontWeight.bold,
+  },
+  tabBadgeTextLight: {
+    color: '#fff',
+  },
+  pendingBadge: {
+    backgroundColor: colors.primary[600],
+  },
+  subSection: {
+    marginTop: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  subSectionTitle: {
+    fontSize: fontSize.xs,
+    fontWeight: fontWeight.bold,
+    color: colors.gray[400],
+    marginBottom: spacing.sm,
+    marginLeft: spacing.xs,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  sentCard: {
+    backgroundColor: colors.background.primary,
+    borderColor: colors.gray[200],
   },
 });
