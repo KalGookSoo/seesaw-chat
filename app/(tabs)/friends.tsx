@@ -106,6 +106,7 @@ export default function FriendsScreen() {
       setShowDetailModal(false);
       setSearchQuery('');
       setSearchResults([]);
+      await loadData();
     } catch (error: any) {
       Alert.handleApiError(error, '친구 요청 실패');
     }
