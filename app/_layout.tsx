@@ -8,6 +8,7 @@ import 'react-native-reanimated';
 import { setCurrentPathname } from '@/services/api-client';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { GlobalSpinner } from '@/components/ui/global-spinner';
 
 export const unstable_settings = {
   // 네이티브 앱 딥링크 미적용 시 초기 화면 (웹에서는 URL로 결정되므로 무관)
@@ -39,6 +40,7 @@ export default function RootLayout() {
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
       </Stack>
       <StatusBar style="auto" />
+      <GlobalSpinner />
     </ThemeProvider>
   );
 }

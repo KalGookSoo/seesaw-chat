@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import { tokenStorage } from './storage';
 import * as base64js from 'base64-js';
+import { spinnerService } from './spinner';
 
 let currentPathname = '/';
 
@@ -71,8 +72,12 @@ export class ApiError extends Error {
 
 const REQUEST_TIMEOUT = 10000; // 10초 타임아웃
 
-export async function request<T = void>(path: string, options: RequestInit & { skipAuth?: boolean } = {}): Promise<T> {
-  const { skipAuth = false, ...fetchOptions } = options;
+export async function request<T = void>(path: string, options: RequestInit & { skipAuth?: boolean; skipSpinner?: boolean } = {}): Promise<T> {
+  const { skipAuth = false, skipSpinner = false, ...fetchOptions } = options;
+
+  if (!skipSpinner) {
+    spinnerService.show();
+  }
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
@@ -175,6 +180,10 @@ export async function request<T = void>(path: string, options: RequestInit & { s
       throw new Error('요청 시간이 초과되었습니다. 네트워크 상태를 확인해주세요.');
     }
     throw error;
+  } finally {
+    if (!skipSpinner) {
+      spinnerService.hide();
+    }
   }
 }
 
