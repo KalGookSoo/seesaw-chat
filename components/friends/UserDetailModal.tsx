@@ -239,6 +239,7 @@ const styles = StyleSheet.create({
     fontWeight: fontWeight.bold,
   },
   removeButton: {
+    flex: 1,
     backgroundColor: colors.error + '1A', // Light red
   },
   removeButtonText: {
