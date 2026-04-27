@@ -6,6 +6,11 @@ import type { UserResponse } from '@/services/mock-data';
 
 export type RelationshipStatus = 'FRIEND' | 'SENT_REQUEST' | 'RECEIVED_REQUEST' | 'BLOCKED' | 'NONE';
 
+interface FriendRequestInfo {
+  canBlock: boolean; // 차단 가능 여부
+  canDelete: boolean; // 삭제 가능 여부
+}
+
 const ROLE_MAPPING = {
   ROLE_USER: '일반사용자',
   ROLE_MANAGER: '관리자',
@@ -17,10 +22,13 @@ interface UserDetailModalProps {
   onClose: () => void;
   user: UserResponse | null;
   relationship: RelationshipStatus;
+  friendRequestInfo?: FriendRequestInfo;
   onSendRequest: (user: UserResponse) => void;
   onAcceptRequest: (userId: string) => void;
   onRejectRequest: (userId: string) => void;
   onRemoveFriend: (userId: string, userName: string) => void;
+  onBlockUser?: (userId: string) => void;
+  onCreateChatRoom?: (userId: string) => void;
 }
 
 export function UserDetailModal({
@@ -28,36 +36,64 @@ export function UserDetailModal({
   onClose,
   user,
   relationship,
+  friendRequestInfo,
   onSendRequest,
   onAcceptRequest,
   onRejectRequest,
   onRemoveFriend,
+  onBlockUser,
+  onCreateChatRoom,
 }: UserDetailModalProps) {
   if (!user) return null;
 
   const renderActionButton = () => {
     switch (relationship) {
       case 'FRIEND':
+        // 친구 상태: 채팅방 생성, 차단하기, 친구 삭제
         return (
-          <TouchableOpacity style={[styles.actionButton, styles.removeButton]} onPress={() => onRemoveFriend(user.id, user.name)}>
-            <Text style={styles.removeButtonText}>친구 삭제</Text>
-          </TouchableOpacity>
+          <View style={styles.friendActionsContainer}>
+            {onCreateChatRoom && (
+              <TouchableOpacity style={[styles.actionButton, styles.chatButton]} onPress={() => onCreateChatRoom(user.id)}>
+                <IconSymbol name="message" size={18} color="#fff" />
+                <Text style={styles.chatButtonText}>채팅방 생성</Text>
+              </TouchableOpacity>
+            )}
+            <View style={styles.buttonRow}>
+              {onBlockUser && (
+                <TouchableOpacity style={[styles.actionButton, styles.blockButton]} onPress={() => onBlockUser(user.id)}>
+                  <Text style={styles.blockButtonText}>차단하기</Text>
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity style={[styles.actionButton, styles.removeButton]} onPress={() => onRemoveFriend(user.id, user.name)}>
+                <Text style={styles.removeButtonText}>친구 삭제</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         );
       case 'SENT_REQUEST':
+        // 내가 보낸 요청: 삭제만 가능 (차단 불가)
         return (
           <TouchableOpacity style={[styles.actionButton, styles.cancelButton]} onPress={() => onRejectRequest(user.id)}>
-            <Text style={styles.cancelButtonText}>요청 취소</Text>
+            <Text style={styles.cancelButtonText}>요청 삭제</Text>
           </TouchableOpacity>
         );
       case 'RECEIVED_REQUEST':
+        // 받은 요청: 승인, 거절, 차단 가능
         return (
-          <View style={styles.buttonRow}>
-            <TouchableOpacity style={[styles.actionButton, styles.rejectButton]} onPress={() => onRejectRequest(user.id)}>
-              <Text style={styles.rejectButtonText}>취소</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.actionButton, styles.acceptButton]} onPress={() => onAcceptRequest(user.id)}>
-              <Text style={styles.acceptButtonText}>승인</Text>
-            </TouchableOpacity>
+          <View style={styles.receivedRequestContainer}>
+            <View style={styles.buttonRow}>
+              <TouchableOpacity style={[styles.actionButton, styles.rejectButton]} onPress={() => onRejectRequest(user.id)}>
+                <Text style={styles.rejectButtonText}>거절</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.actionButton, styles.acceptButton]} onPress={() => onAcceptRequest(user.id)}>
+                <Text style={styles.acceptButtonText}>승인</Text>
+              </TouchableOpacity>
+            </View>
+            {onBlockUser && (
+              <TouchableOpacity style={[styles.actionButton, styles.blockButtonFull]} onPress={() => onBlockUser(user.id)}>
+                <Text style={styles.blockButtonText}>차단하기</Text>
+              </TouchableOpacity>
+            )}
           </View>
         );
       case 'NONE':
@@ -233,12 +269,43 @@ const styles = StyleSheet.create({
     fontWeight: fontWeight.bold,
   },
   acceptButton: {
-    flex: 2,
+    flex: 1,
     backgroundColor: colors.primary[600],
   },
   acceptButtonText: {
     color: '#fff',
     fontSize: fontSize.base,
     fontWeight: fontWeight.bold,
+  },
+  friendActionsContainer: {
+    width: '100%',
+    gap: spacing.md,
+  },
+  chatButton: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    backgroundColor: colors.primary[600],
+  },
+  chatButtonText: {
+    color: '#fff',
+    fontSize: fontSize.base,
+    fontWeight: fontWeight.bold,
+  },
+  blockButton: {
+    flex: 1,
+    backgroundColor: colors.gray[200],
+  },
+  blockButtonText: {
+    color: colors.gray[700],
+    fontSize: fontSize.base,
+    fontWeight: fontWeight.bold,
+  },
+  blockButtonFull: {
+    width: '100%',
+    backgroundColor: colors.gray[200],
+  },
+  receivedRequestContainer: {
+    width: '100%',
+    gap: spacing.md,
   },
 });

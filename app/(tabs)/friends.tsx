@@ -4,12 +4,12 @@ import { Alert } from '@/services/alert';
 import { authService, chatService, friendService } from '@/services/api';
 import type { FriendResponse, UserResponse } from '@/services/mock-data';
 import { router } from 'expo-router';
-import { FlatList, Modal, RefreshControl, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { UserDetailModal, RelationshipStatus } from '@/components/friends/UserDetailModal';
-import { SearchUserModal } from '@/components/friends/SearchUserModal';
 import { CreateChatRoomModal } from '@/components/friends/CreateChatRoomModal';
+import { SearchUserModal } from '@/components/friends/SearchUserModal';
+import { RelationshipStatus, UserDetailModal } from '@/components/friends/UserDetailModal';
 
 export default function FriendsScreen() {
   const [activeTab, setActiveTab] = useState<'ACCEPTED' | 'PENDING' | 'BLOCKED'>('ACCEPTED');
@@ -120,7 +120,7 @@ export default function FriendsScreen() {
     try {
       const userDetail = await friendService.getUserDetail(userId);
       setSelectedUser(userDetail);
-      
+
       if (fromSearch) {
         setShowSearchModal(false);
         setReturnToSearch(true);
@@ -143,13 +143,15 @@ export default function FriendsScreen() {
     }
   };
 
-  const getRelationship = (userId: string): RelationshipStatus => {
-    if (myUserId === userId) return 'NONE';
-    if (friends.some((f) => f.friend.id === userId)) return 'FRIEND';
-    if (blockedFriends.some((f) => f.friend.id === userId)) return 'BLOCKED';
-    const pending = pendingRequests.find((f) => f.friend.id === userId);
+  const getRelationship = (targetUserId: string): RelationshipStatus => {
+    if (myUserId === targetUserId) return 'NONE';
+    if (friends.some((f) => f.friend.id === targetUserId || f.userId === targetUserId)) return 'FRIEND';
+    if (blockedFriends.some((f) => f.friend.id === targetUserId || f.userId === targetUserId)) return 'BLOCKED';
+    const pending = pendingRequests.find((f) => f.friend.id === targetUserId);
     if (pending) {
-      return pending.userId === myUserId ? 'RECEIVED_REQUEST' : 'SENT_REQUEST';
+      // userId는 보낸 사람 ID
+      if (pending.userId === myUserId) return 'SENT_REQUEST';
+      return 'RECEIVED_REQUEST';
     }
     return 'NONE';
   };
@@ -186,12 +188,65 @@ export default function FriendsScreen() {
     }
   };
 
+  const handleBlockUser = async (userId: string) => {
+    const user = selectedUser;
+    if (!user) return;
+
+    Alert.alert('사용자 차단', `${user.name}님을 차단하시겠습니까?\n차단 후에는 상대방의 친구 요청 및 메시지를 받지 않습니다.`, [
+      { text: '취소', style: 'cancel' },
+      {
+        text: '차단',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await friendService.blockFriend(userId);
+            Alert.alert('성공', '사용자를 차단했습니다.');
+            setShowDetailModal(false);
+            await loadData();
+          } catch (error: any) {
+            Alert.handleApiError(error, '차단 실패');
+          }
+        },
+      },
+    ]);
+  };
+
+  const handleCreateChatRoomWithFriend = async (userId: string) => {
+    const friend = friends.find((f) => f.friend.id === userId);
+    if (!friend) return;
+
+    setShowDetailModal(false);
+
+    Alert.alert('채팅방 생성', `${friend.friend.name}님과의 채팅방을 생성하시겠습니까?`, [
+      { text: '취소', style: 'cancel' },
+      {
+        text: '생성',
+        onPress: async () => {
+          try {
+            const newRoom = await chatService.createChatRoom(`${friend.friend.name}님과의 채팅`, [userId]);
+            Alert.alert('성공', '채팅방이 생성되었습니다.');
+
+            // 새 채팅방으로 이동
+            router.push({
+              pathname: '/chat/[id]',
+              params: { id: newRoom.id },
+            });
+          } catch (error: any) {
+            Alert.handleApiError(error, '채팅방 생성 실패');
+          }
+        },
+      },
+    ]);
+  };
+
   const renderFriendItem = ({ item }: { item: FriendResponse }) => (
     <TouchableOpacity
       style={[styles.friendCard, isCreateChatMode && selectedFriends.includes(item.friend.id) && styles.selectedFriendCard]}
       onPress={() => {
         if (isCreateChatMode) {
           toggleFriendSelection(item.friend.id);
+        } else {
+          handleShowDetail(item.friend.id);
         }
       }}
       onLongPress={() => !isCreateChatMode && handleRemoveFriend(item)}
@@ -217,7 +272,9 @@ export default function FriendsScreen() {
   );
 
   const renderPendingItem = ({ item }: { item: FriendResponse }) => {
-    const isSentByMe = item.userId !== myUserId;
+    // userId는 보낸 사람의 ID입니다.
+    const isSentByMe = item.userId === myUserId;
+    const isReceivedByMe = !isSentByMe;
 
     return (
       <TouchableOpacity style={[styles.pendingCard, isSentByMe && styles.sentCard]} onPress={() => handleShowDetail(item.friend.id)} activeOpacity={0.7}>
@@ -230,7 +287,7 @@ export default function FriendsScreen() {
           <Text style={styles.statusLabel}>{isSentByMe ? '보낸 요청' : '받은 요청'}</Text>
         </View>
         <View style={styles.pendingActions}>
-          {!isSentByMe && (
+          {isReceivedByMe && (
             <TouchableOpacity
               style={styles.acceptButton}
               onPress={(e) => {
@@ -341,7 +398,7 @@ export default function FriendsScreen() {
               </View>
             ) : (
               <>
-                {pendingRequests.some((r) => r.userId !== myUserId) && (
+                {pendingRequests.filter((r) => r.userId !== myUserId).length > 0 && (
                   <View style={styles.subSection}>
                     <Text style={styles.subSectionTitle}>받은 요청</Text>
                     {pendingRequests
@@ -352,7 +409,7 @@ export default function FriendsScreen() {
                   </View>
                 )}
 
-                {pendingRequests.some((r) => r.userId === myUserId) && (
+                {pendingRequests.filter((r) => r.userId === myUserId).length > 0 && (
                   <View style={styles.subSection}>
                     <Text style={styles.subSectionTitle}>보낸 요청</Text>
                     {pendingRequests
@@ -421,6 +478,8 @@ export default function FriendsScreen() {
             handleCloseDetail();
           }
         }}
+        onBlockUser={handleBlockUser}
+        onCreateChatRoom={handleCreateChatRoomWithFriend}
       />
 
       {/* Create Chat Room Modal */}

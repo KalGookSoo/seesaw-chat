@@ -101,6 +101,9 @@ export const friendService = {
 
   removeFriend: (friendId: string): Promise<void> => apiClient.delete<void>(`/api/friends/${friendId}`),
 
+  /** PUT /api/friends/{friendId}/block → void (친구 차단) */
+  blockFriend: (friendId: string): Promise<void> => apiClient.put<void>(`/api/friends/${friendId}/block`),
+
   /**
    * GET /api/users?username=...&name=... — UserSearch → UserResponse[]
    * 친구 추가를 위해 사용자를 검색합니다. (아이디 또는 이름으로 검색)
