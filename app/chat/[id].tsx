@@ -6,12 +6,16 @@ import type { ChatRoomResponse, FriendResponse, MessageResponse, UserResponse } 
 import { tokenStorage } from '@/services/storage';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { Dimensions, FlatList, KeyboardAvoidingView, Modal, Platform, Pressable, SafeAreaView, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Dimensions, FlatList, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function ChatDetailScreen() {
   const { id } = useLocalSearchParams();
+  const colorScheme = useColorScheme() ?? 'light';
   const [chatRoom, setChatRoom] = useState<ChatRoomResponse | null>(null);
   const [messages, setMessages] = useState<MessageResponse[]>([]);
   const [inputText, setInputText] = useState('');
@@ -272,12 +276,12 @@ export default function ChatDetailScreen() {
     const showSender = !prevMessage || prevMessage.sender?.id !== item.sender?.id || !isMyMessage;
 
     return (
-      <View className={`mb-4 max-w-[75%] ${isMyMessage ? 'self-end items-end' : 'self-start items-start'}`}>
-        {!isMyMessage && showSender && <Text className="text-xs opacity-70 mb-1 ml-1 text-gray-700 dark:text-gray-300">{item.sender.name}</Text>}
-        <View className={`rounded-2xl px-4 py-2 shadow-sm ${isMyMessage ? 'bg-blue-600 dark:bg-blue-500 rounded-tr-[2px]' : 'bg-gray-100 dark:bg-gray-800 rounded-tl-[2px]'}`}>
-          <Text className={`text-base leading-5 ${isMyMessage ? 'text-white' : 'text-gray-900 dark:text-white'}`}>{item.content}</Text>
+      <View className={`mb-4 max-w-[80%] ${isMyMessage ? 'self-end items-end' : 'self-start items-start'}`}>
+        {!isMyMessage && showSender && <Text className="text-xs opacity-70 mb-1 ml-1 text-slate-700 dark:text-slate-300">{item.sender.name}</Text>}
+        <View className={`rounded-2xl px-4 py-2 shadow-sm ${isMyMessage ? 'bg-primary-600 dark:bg-primary-500 rounded-tr-[2px]' : 'bg-slate-100 dark:bg-slate-800 rounded-tl-[2px]'}`}>
+          <Text className={`text-base leading-5 ${isMyMessage ? 'text-white' : 'text-slate-900 dark:text-white'}`}>{item.content}</Text>
         </View>
-        <Text className={`text-[10px] opacity-50 mt-1 ${isMyMessage ? 'text-right' : 'text-left ml-1'} text-gray-500 dark:text-gray-400`}>{formatMessageTime(item.createdDate)}</Text>
+        <Text className={`text-[10px] opacity-50 mt-1 ${isMyMessage ? 'text-right' : 'text-left ml-1'} text-slate-500 dark:text-slate-400`}>{formatMessageTime(item.createdDate)}</Text>
       </View>
     );
   };
@@ -294,20 +298,22 @@ export default function ChatDetailScreen() {
   }, [id, loadInitialData, connectWebSocket, cleanupWebSocket]);
 
   return (
-    <SafeAreaView className="flex-1 bg-white dark:bg-gray-950">
+    <SafeAreaView className="flex-1 bg-slate-50 dark:bg-slate-950" edges={['top', 'left', 'right']}>
       <Stack.Screen
         options={{
           title: chatRoom?.name || '채팅',
           headerShown: true,
+          headerStyle: { backgroundColor: colorScheme === 'dark' ? '#0f172a' : '#ffffff' },
+          headerTintColor: colorScheme === 'dark' ? '#f8fafc' : '#0f172a',
           headerRight: () => (
             <View className="flex-row items-center gap-2">
               {wsStatus === WebSocket.CONNECTING && (
-                <View className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
-                  <Text className="text-[10px] text-gray-500 dark:text-gray-400 font-bold">연결 중...</Text>
+                <View className="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-full">
+                  <Text className="text-[10px] text-slate-500 dark:text-slate-400 font-bold">연결 중...</Text>
                 </View>
               )}
               <TouchableOpacity onPress={() => setIsDrawerOpen(true)} className="p-2">
-                <MaterialIcons name="menu" size={24} className="text-gray-900 dark:text-white" />
+                <MaterialIcons name="menu" size={24} className="text-slate-900 dark:text-white" />
               </TouchableOpacity>
             </View>
           ),
@@ -316,11 +322,11 @@ export default function ChatDetailScreen() {
 
       {isConnectionFailed ? (
         <View className="flex-1 items-center justify-center px-8">
-          <MaterialIcons name="wifi-off" size={48} color="#d1d5db" />
-          <Text className="text-xl font-bold text-gray-900 dark:text-white mt-4">연결에 실패했습니다</Text>
-          <Text className="text-base text-gray-500 dark:text-gray-400 text-center mt-2">서버와의 연결이 원활하지 않습니다.{'\n'}인터넷 연결을 확인하고 다시 시도해주세요.</Text>
+          <MaterialIcons name="wifi-off" size={48} className="text-slate-300 dark:text-slate-700" />
+          <Text className="text-xl font-bold text-slate-900 dark:text-white mt-4">연결에 실패했습니다</Text>
+          <Text className="text-base text-slate-500 dark:text-slate-400 text-center mt-2">서버와의 연결이 원활하지 않습니다.{'\n'}인터넷 연결을 확인하고 다시 시도해주세요.</Text>
           <TouchableOpacity
-            className="mt-6 px-6 py-3 bg-blue-600 dark:bg-blue-500 rounded-xl"
+            className="mt-6 px-6 py-3 bg-primary-600 dark:bg-primary-500 rounded-xl"
             onPress={() => {
               retryCount.current = 0;
               connectWebSocket();
@@ -330,7 +336,7 @@ export default function ChatDetailScreen() {
           </TouchableOpacity>
         </View>
       ) : (
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} className="flex-1" keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} className="flex-1" keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}>
           <FlatList
             data={messages}
             renderItem={renderMessage}
@@ -341,39 +347,41 @@ export default function ChatDetailScreen() {
             ref={flatListRef}
             ListEmptyComponent={
               <View className="flex-1 items-center justify-center mt-24">
-                <Text className="text-lg font-bold text-gray-900 dark:text-white mb-1">메시지가 없습니다.</Text>
-                <Text className="text-sm opacity-60 text-gray-500 dark:text-gray-400">첫 메시지를 보내보세요!</Text>
+                <Text className="text-lg font-bold text-slate-900 dark:text-white mb-1">메시지가 없습니다.</Text>
+                <Text className="text-sm opacity-60 text-slate-500 dark:text-slate-400">첫 메시지를 보내보세요!</Text>
               </View>
             }
           />
 
-          <View className="flex-row px-4 py-3 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950 items-end">
-            <TextInput
-              className="flex-1 min-h-[40px] max-h-[120px] bg-gray-100 dark:bg-gray-900 rounded-2xl px-4 py-2 text-base text-gray-900 dark:text-white"
-              placeholder={wsStatus === WebSocket.CONNECTING ? '연결 중...' : '메시지를 입력하세요...'}
-              placeholderTextColor="#9ca3af"
-              value={inputText}
-              onChangeText={setInputText}
-              multiline
-              maxLength={1000}
-              editable={wsStatus === WebSocket.OPEN}
-            />
-            <TouchableOpacity
-              className={`w-10 h-10 rounded-full justify-center items-center ml-2 ${inputText.trim() && wsStatus === WebSocket.OPEN ? 'bg-blue-600 dark:bg-blue-500' : 'bg-gray-100 dark:bg-gray-800'}`}
-              onPress={handleSend}
-              disabled={!inputText.trim() || wsStatus !== WebSocket.OPEN}
-            >
-              <MaterialIcons name="send" size={20} className={inputText.trim() && wsStatus === WebSocket.OPEN ? 'text-white' : 'text-gray-400 dark:text-gray-600'} />
-            </TouchableOpacity>
-          </View>
+            <SafeAreaView edges={['bottom', 'left', 'right']} className="bg-white dark:bg-slate-900 shadow-lg border-t border-slate-100 dark:border-slate-800">
+              <View className="flex-row px-4 py-3 items-end">
+                <TextInput
+                  className="flex-1 min-h-[44px] max-h-[120px] bg-slate-100 dark:bg-slate-800 rounded-2xl px-4 py-2.5 text-base text-slate-900 dark:text-white"
+                  placeholder={wsStatus === WebSocket.CONNECTING ? '연결 중...' : '메시지를 입력하세요...'}
+                  placeholderTextColor="#9ca3af"
+                  value={inputText}
+                  onChangeText={setInputText}
+                  multiline
+                  maxLength={1000}
+                  editable={wsStatus === WebSocket.OPEN}
+                />
+                <TouchableOpacity
+                  className={`w-11 h-11 rounded-full justify-center items-center ml-2 ${inputText.trim() && wsStatus === WebSocket.OPEN ? 'bg-primary-600 dark:bg-primary-500' : 'bg-slate-100 dark:bg-slate-800'}`}
+                  onPress={handleSend}
+                  disabled={!inputText.trim() || wsStatus !== WebSocket.OPEN}
+                >
+                  <MaterialIcons name="send" size={22} className={inputText.trim() && wsStatus === WebSocket.OPEN ? 'text-white' : 'text-slate-400 dark:text-slate-600'} />
+                </TouchableOpacity>
+              </View>
+            </SafeAreaView>
         </KeyboardAvoidingView>
       )}
 
       {/* Drawer Menu */}
       <Modal visible={isDrawerOpen} transparent animationType="none">
         <Pressable className="flex-1 bg-black/50 flex-row justify-end" onPress={() => setIsDrawerOpen(false)}>
-          <Pressable className="w-[80%] bg-white dark:bg-gray-950 h-full shadow-2xl" onPress={(e) => e.stopPropagation()}>
-            <SafeAreaView className="flex-1">
+          <Pressable className="w-[80%] bg-white dark:bg-slate-950 h-full shadow-2xl" onPress={(e) => e.stopPropagation()}>
+            <SafeAreaView className="flex-1" edges={['top', 'bottom', 'right']}>
               <View className="flex-row justify-between items-center p-5 border-b border-gray-100 dark:border-gray-800">
                 <Text className="text-xl font-bold text-gray-900 dark:text-white">채팅방 정보</Text>
                 <TouchableOpacity onPress={() => setIsDrawerOpen(false)}>
@@ -416,8 +424,8 @@ export default function ChatDetailScreen() {
                   {chatRoom?.members?.map((member) => (
                     <View key={member.id} className="flex-row justify-between items-center py-2">
                       <View className="flex-row items-center gap-3">
-                        <View className="w-9 h-9 rounded-full bg-blue-50 dark:bg-blue-900/30 justify-center items-center">
-                          <Text className="text-base font-bold text-blue-600 dark:text-blue-400">{member.name[0]}</Text>
+                        <View className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30 justify-center items-center">
+                          <Text className="text-base font-bold text-primary-600 dark:text-primary-400">{member.name[0]}</Text>
                         </View>
                         <Text className="text-base text-gray-900 dark:text-white">{member.name}</Text>
                         {member.id === chatRoom.createdBy && (
@@ -469,8 +477,8 @@ export default function ChatDetailScreen() {
                   className={`flex-row items-center p-3 rounded-xl mb-2 ${selectedFriends.includes(item.friend.id) ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}
                   onPress={() => toggleFriendSelection(item.friend.id)}
                 >
-                  <View className="w-9 h-9 rounded-full bg-blue-50 dark:bg-blue-900/30 justify-center items-center mr-3">
-                    <Text className="text-base font-bold text-blue-600 dark:text-blue-400">{item.friend.name[0]}</Text>
+                  <View className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30 justify-center items-center mr-3">
+                    <Text className="text-base font-bold text-primary-600 dark:text-primary-400">{item.friend.name[0]}</Text>
                   </View>
                   <Text className="flex-1 text-base text-gray-900 dark:text-white">{item.friend.name}</Text>
                   <View

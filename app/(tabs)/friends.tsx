@@ -1,11 +1,4 @@
 import React, { useState } from 'react';
-import { Alert } from '@/services/alert';
-import { chatService, friendService } from '@/services/api';
-import type { UserResponse } from '@/services/mock-data';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { router } from 'expo-router';
-import { RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
-
 import { CreateChatRoomModal } from '@/features/friends/components/CreateChatRoomModal';
 import { FriendListItem } from '@/features/friends/components/FriendListItem';
 import { FriendTabs } from '@/features/friends/components/FriendTabs';
@@ -13,8 +6,18 @@ import { PendingRequestItem } from '@/features/friends/components/PendingRequest
 import { SearchUserModal } from '@/features/friends/components/SearchUserModal';
 import { RelationshipStatus, UserDetailModal } from '@/features/friends/components/UserDetailModal';
 import { useFriends } from '@/features/friends/hooks/useFriends';
+import { Alert } from '@/services/alert';
+import { chatService, friendService } from '@/services/api';
+import type { UserResponse } from '@/services/mock-data';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { router } from 'expo-router';
+import { RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export default function FriendsScreen() {
+  const colorScheme = useColorScheme();
   const [activeTab, setActiveTab] = useState<'ACCEPTED' | 'PENDING' | 'BLOCKED'>('ACCEPTED');
 
   // Custom Hook for State & Logic
@@ -157,41 +160,42 @@ export default function FriendsScreen() {
   };
 
   return (
-    <View className="flex-1 bg-gray-50 dark:bg-gray-900">
-      {/* Header */}
-      <View className="flex-row justify-between items-center px-5 pt-16 pb-5 bg-white dark:bg-gray-950">
-        <View>
-          <Text className="text-3xl font-bold text-gray-900 dark:text-white">친구</Text>
-          <Text className="text-sm text-gray-500 dark:text-gray-400 mt-1">{friends.length}명의 친구</Text>
-        </View>
-        <View className="flex-row gap-2">
-          <TouchableOpacity className="w-11 h-11 rounded-xl bg-blue-50 dark:bg-blue-900/30 justify-center items-center" onPress={handleRefresh}>
-            <MaterialIcons name="refresh" size={20} color="#2563eb" />
-          </TouchableOpacity>
-          <TouchableOpacity
-            className={`w-11 h-11 rounded-xl justify-center items-center ${isCreateChatMode ? 'bg-gray-200 dark:bg-gray-800' : 'bg-blue-50 dark:bg-blue-900/30'}`}
-            onPress={() => {
-              setIsCreateChatMode(!isCreateChatMode);
-              setSelectedFriends([]);
-            }}
-          >
-            <MaterialIcons name={isCreateChatMode ? 'close' : 'chat'} size={20} color={isCreateChatMode ? '#4b5563' : '#2563eb'} />
-          </TouchableOpacity>
-          <TouchableOpacity className="w-11 h-11 rounded-xl bg-blue-50 dark:bg-blue-900/30 justify-center items-center" onPress={() => setShowSearchModal(true)}>
-            <MaterialIcons name="person-add" size={22} color="#2563eb" />
-          </TouchableOpacity>
+    <SafeAreaView className="flex-1 bg-slate-50 dark:bg-slate-900" edges={['top', 'left', 'right']}>
+      <View className="px-5 pt-16 pb-5 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
+        <View className="flex-row justify-between items-center">
+          <View>
+            <Text className="text-3xl font-bold text-slate-900 dark:text-white">친구</Text>
+            <Text className="text-sm text-slate-500 dark:text-slate-400 mt-1">{friends.length}명의 친구</Text>
+          </View>
+          <View className="flex-row gap-2">
+            <TouchableOpacity className="w-11 h-11 rounded-xl bg-slate-100 dark:bg-slate-800 justify-center items-center" onPress={handleRefresh}>
+              <MaterialIcons name="refresh" size={20} className="text-slate-900 dark:text-white" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              className={`w-11 h-11 rounded-xl justify-center items-center ${isCreateChatMode ? 'bg-primary-600 dark:bg-primary-500' : 'bg-slate-100 dark:bg-slate-800'}`}
+              onPress={() => {
+                setIsCreateChatMode(!isCreateChatMode);
+                setSelectedFriends([]);
+              }}
+            >
+              <MaterialIcons name={isCreateChatMode ? 'close' : 'chat'} size={20} className={isCreateChatMode ? 'text-white' : 'text-slate-900 dark:text-white'} />
+            </TouchableOpacity>
+            <TouchableOpacity className="w-11 h-11 rounded-xl bg-slate-100 dark:bg-slate-800 justify-center items-center" onPress={() => setShowSearchModal(true)}>
+              <MaterialIcons name="person-add" size={22} className="text-slate-900 dark:text-white" />
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
 
       {isCreateChatMode && (
-        <View className="flex-row justify-between items-center px-5 py-3 bg-blue-600 dark:bg-blue-700">
+        <View className="flex-row justify-between items-center px-5 py-3 bg-primary-600 dark:bg-primary-700 shadow-sm">
           <Text className="text-white text-base font-semibold">{selectedFriends.length}명 선택됨</Text>
           <TouchableOpacity
-            className={`bg-white dark:bg-gray-100 px-4 py-1.5 rounded-lg ${selectedFriends.length === 0 ? 'opacity-50' : ''}`}
+            className={`bg-white dark:bg-slate-100 px-4 py-1.5 rounded-lg ${selectedFriends.length === 0 ? 'opacity-50' : ''}`}
             disabled={selectedFriends.length === 0}
             onPress={() => setShowCreateModal(true)}
           >
-            <Text className="text-blue-600 dark:text-blue-700 text-sm font-bold">채팅방 생성</Text>
+            <Text className="text-primary-600 dark:text-primary-700 text-sm font-bold">채팅방 생성</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -199,7 +203,11 @@ export default function FriendsScreen() {
       {/* Tabs */}
       <FriendTabs activeTab={activeTab} onChangeTab={setActiveTab} friendsCount={friends.length} pendingCount={pendingRequests.length} />
 
-      <ScrollView className="flex-1 px-5" showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}>
+      <ScrollView
+        className="flex-1 px-5"
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colorScheme === 'dark' ? '#3b82f6' : '#2563eb'} />}
+      >
         {activeTab === 'ACCEPTED' && (
           <View className="mt-5">
             {friends.length === 0 ? (
@@ -339,6 +347,6 @@ export default function FriendsScreen() {
         onNameChange={setNewChatRoomName}
         onCreate={handleCreateChatRoom}
       />
-    </View>
+    </SafeAreaView>
   );
 }

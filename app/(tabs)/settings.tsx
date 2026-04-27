@@ -56,32 +56,32 @@ export default function SettingsScreen() {
   };
 
   return (
-    <View className="flex-1 bg-gray-50 dark:bg-gray-950">
-      <View className="px-5 pt-16 pb-5 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800">
-        <Text className="text-3xl font-bold text-gray-900 dark:text-white">설정</Text>
+    <View className="flex-1 bg-slate-50 dark:bg-slate-950">
+      <View className="px-5 pt-16 pb-5 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
+        <Text className="text-3xl font-bold text-slate-900 dark:text-white">설정</Text>
       </View>
 
       <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
-        <View className="flex-row items-center px-5 py-6 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800">
-          <View className="w-16 h-16 rounded-full bg-blue-600 dark:bg-blue-500 justify-center items-center mr-4 shadow-sm">
+        <View className="flex-row items-center px-5 py-6 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
+          <View className="w-16 h-16 rounded-full bg-primary-600 dark:bg-primary-500 justify-center items-center mr-4 shadow-sm">
             <Text className="text-white text-2xl font-bold">{currentUser?.name ? currentUser.name[0] : '?'}</Text>
           </View>
           <View className="flex-1">
-            <Text className="text-xl font-bold text-gray-900 dark:text-white mb-1">{currentUser?.name || '사용자'}</Text>
-            <Text className="text-sm text-gray-500 dark:text-gray-400">@{currentUser?.username || '-'}</Text>
+            <Text className="text-xl font-bold text-slate-900 dark:text-white mb-1">{currentUser?.name || '사용자'}</Text>
+            <Text className="text-sm text-slate-500 dark:text-slate-400">@{currentUser?.username || '-'}</Text>
           </View>
         </View>
 
         <View className="pt-6 pb-2">
-          <Text className="text-xs font-bold text-gray-400 dark:text-gray-500 px-5 mb-2 uppercase tracking-wider">알림</Text>
-          <View className="flex-row justify-between items-center px-5 py-4 bg-white dark:bg-gray-900 border-b border-gray-50 dark:border-gray-800/50">
+          <Text className="text-xs font-bold text-slate-400 dark:text-slate-500 px-5 mb-2 uppercase tracking-wider">알림</Text>
+          <View className="flex-row justify-between items-center px-5 py-4 bg-white dark:bg-slate-900 border-b border-slate-50 dark:border-slate-800/50">
             <View className="flex-1 flex-row items-center">
-              <View className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 justify-center items-center mr-3">
+              <View className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 justify-center items-center mr-3">
                 <MaterialIcons name="notifications" size={18} color="#2563eb" />
               </View>
               <View>
-                <Text className="text-base font-semibold text-gray-900 dark:text-white">푸시 알림</Text>
-                <Text className="text-xs text-gray-500 dark:text-gray-400">새 메시지 알림을 받습니다</Text>
+                <Text className="text-base font-semibold text-slate-900 dark:text-white">푸시 알림</Text>
+                <Text className="text-xs text-slate-500 dark:text-slate-400">새 메시지 알림을 받습니다</Text>
               </View>
             </View>
             <Switch value={pushEnabled} onValueChange={handlePushToggle} trackColor={{ false: '#d1d5db', true: '#2563eb' }} thumbColor="#fff" />
@@ -89,34 +89,34 @@ export default function SettingsScreen() {
         </View>
 
         <View className="pt-6 pb-2">
-          <Text className="text-xs font-bold text-gray-400 dark:text-gray-500 px-5 mb-2 uppercase tracking-wider">계정</Text>
+          <Text className="text-xs font-bold text-slate-400 dark:text-slate-500 px-5 mb-2 uppercase tracking-wider">계정</Text>
           <TouchableOpacity
-            className="flex-row justify-between items-center px-5 py-4 bg-white dark:bg-gray-900 border-b border-gray-50 dark:border-gray-800/50"
+            className="flex-row justify-between items-center px-5 py-4 bg-white dark:bg-slate-900 border-b border-slate-50 dark:border-slate-800/50"
             onPress={() => router.push('/settings/profile')}
           >
             <View className="flex-row items-center">
-              <View className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 justify-center items-center mr-3">
+              <View className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 justify-center items-center mr-3">
                 <MaterialIcons name="account-circle" size={18} color="#2563eb" />
               </View>
               <View>
-                <Text className="text-base font-semibold text-gray-900 dark:text-white">프로필 편집</Text>
-                <Text className="text-xs text-gray-500 dark:text-gray-400">이름과 프로필 사진을 변경합니다</Text>
+                <Text className="text-base font-semibold text-slate-900 dark:text-white">프로필 편집</Text>
+                <Text className="text-xs text-slate-500 dark:text-slate-400">이름과 프로필 사진을 변경합니다</Text>
               </View>
             </View>
             <MaterialIcons name="chevron-right" size={16} color="#9ca3af" />
           </TouchableOpacity>
 
           <TouchableOpacity
-            className="flex-row justify-between items-center px-5 py-4 bg-white dark:bg-gray-900 border-b border-gray-50 dark:border-gray-800/50"
+            className="flex-row justify-between items-center px-5 py-4 bg-white dark:bg-slate-900 border-b border-slate-50 dark:border-slate-800/50"
             onPress={() => router.push('/settings/password')}
           >
             <View className="flex-row items-center">
-              <View className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 justify-center items-center mr-3">
+              <View className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 justify-center items-center mr-3">
                 <MaterialIcons name="lock" size={18} color="#2563eb" />
               </View>
               <View>
-                <Text className="text-base font-semibold text-gray-900 dark:text-white">패스워드 변경</Text>
-                <Text className="text-xs text-gray-500 dark:text-gray-400">계정 패스워드를 변경합니다</Text>
+                <Text className="text-base font-semibold text-slate-900 dark:text-white">패스워드 변경</Text>
+                <Text className="text-xs text-slate-500 dark:text-slate-400">계정 패스워드를 변경합니다</Text>
               </View>
             </View>
             <MaterialIcons name="chevron-right" size={16} color="#9ca3af" />
@@ -124,36 +124,36 @@ export default function SettingsScreen() {
         </View>
 
         <View className="pt-6 pb-2">
-          <Text className="text-xs font-bold text-gray-400 dark:text-gray-500 px-5 mb-2 uppercase tracking-wider">정보</Text>
-          <TouchableOpacity className="flex-row justify-between items-center px-5 py-4 bg-white dark:bg-gray-900 border-b border-gray-50 dark:border-gray-800/50">
+          <Text className="text-xs font-bold text-slate-400 dark:text-slate-500 px-5 mb-2 uppercase tracking-wider">정보</Text>
+          <TouchableOpacity className="flex-row justify-between items-center px-5 py-4 bg-white dark:bg-slate-900 border-b border-slate-50 dark:border-slate-800/50">
             <View className="flex-row items-center">
-              <View className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 justify-center items-center mr-3">
+              <View className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 justify-center items-center mr-3">
                 <MaterialIcons name="info" size={18} color="#2563eb" />
               </View>
-              <Text className="text-base font-semibold text-gray-900 dark:text-white">앱 정보</Text>
+              <Text className="text-base font-semibold text-slate-900 dark:text-white">앱 정보</Text>
             </View>
             <View className="flex-row items-center gap-2">
-              <Text className="text-sm text-gray-400 dark:text-gray-500">v1.0.0</Text>
+              <Text className="text-sm text-slate-400 dark:text-slate-500">v1.0.0</Text>
               <MaterialIcons name="chevron-right" size={16} color="#9ca3af" />
             </View>
           </TouchableOpacity>
 
-          <TouchableOpacity className="flex-row justify-between items-center px-5 py-4 bg-white dark:bg-gray-900 border-b border-gray-50 dark:border-gray-800/50">
+          <TouchableOpacity className="flex-row justify-between items-center px-5 py-4 bg-white dark:bg-slate-900 border-b border-slate-50 dark:border-slate-800/50">
             <View className="flex-row items-center">
-              <View className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 justify-center items-center mr-3">
+              <View className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 justify-center items-center mr-3">
                 <MaterialIcons name="description" size={18} color="#2563eb" />
               </View>
-              <Text className="text-base font-semibold text-gray-900 dark:text-white">이용약관</Text>
+              <Text className="text-base font-semibold text-slate-900 dark:text-white">이용약관</Text>
             </View>
             <MaterialIcons name="chevron-right" size={16} color="#9ca3af" />
           </TouchableOpacity>
 
-          <TouchableOpacity className="flex-row justify-between items-center px-5 py-4 bg-white dark:bg-gray-900 border-b border-gray-50 dark:border-gray-800/50">
+          <TouchableOpacity className="flex-row justify-between items-center px-5 py-4 bg-white dark:bg-slate-900 border-b border-slate-50 dark:border-slate-800/50">
             <View className="flex-row items-center">
-              <View className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 justify-center items-center mr-3">
+              <View className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 justify-center items-center mr-3">
                 <MaterialIcons name="front-hand" size={18} color="#2563eb" />
               </View>
-              <Text className="text-base font-semibold text-gray-900 dark:text-white">개인정보처리방침</Text>
+              <Text className="text-base font-semibold text-slate-900 dark:text-white">개인정보처리방침</Text>
             </View>
             <MaterialIcons name="chevron-right" size={16} color="#9ca3af" />
           </TouchableOpacity>

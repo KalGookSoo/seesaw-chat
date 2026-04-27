@@ -21,8 +21,8 @@ export const FriendListItem: React.FC<FriendListItemProps> = ({ item, isCreateCh
       onLongPress={onLongPress}
       activeOpacity={0.7}
     >
-      <View className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-800/50 justify-center items-center mr-4">
-        <Text className="text-lg font-bold text-blue-600 dark:text-blue-400">{item.friend.name[0]}</Text>
+      <View className="w-14 h-14 rounded-full bg-primary-600 dark:bg-primary-500 justify-center items-center mr-4">
+        <Text className="text-white text-2xl font-semibold">{item.friend.name[0]}</Text>
       </View>
       <View className="flex-1">
         <Text className="text-base font-semibold text-gray-900 dark:text-white mb-1">{item.friend.name}</Text>

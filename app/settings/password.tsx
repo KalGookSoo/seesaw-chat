@@ -68,29 +68,29 @@ export default function PasswordChangeScreen() {
   };
 
   return (
-    <View className="flex-1 bg-white dark:bg-gray-950">
+    <View className="flex-1 bg-slate-50 dark:bg-slate-950">
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} className="flex-1">
-        <View className="flex-row items-center justify-between px-4 pt-16 pb-4 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800">
+        <View className="flex-row items-center justify-between px-4 pt-16 pb-4 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
           <TouchableOpacity onPress={() => router.back()} className="w-10 h-10 justify-center items-center">
-            <MaterialIcons name="chevron-left" size={24} className="text-gray-900 dark:text-white" />
+            <MaterialIcons name="chevron-left" size={24} className="text-slate-900 dark:text-white" />
           </TouchableOpacity>
-          <Text className="text-lg font-bold text-gray-900 dark:text-white">패스워드 변경</Text>
+          <Text className="text-lg font-bold text-slate-900 dark:text-white">패스워드 변경</Text>
           <View className="w-10" />
         </View>
 
         <ScrollView className="flex-1 px-6" contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
           <View className="items-center my-10 gap-4">
-            <View className="w-20 h-20 rounded-full bg-blue-50 dark:bg-blue-900/30 justify-center items-center">
+            <View className="w-20 h-20 rounded-full bg-primary-50 dark:bg-primary-900/30 justify-center items-center">
               <MaterialIcons name="lock-outline" size={48} color="#2563eb" />
             </View>
-            <Text className="text-sm text-gray-600 dark:text-gray-400 text-center px-8">주기적인 패스워드 변경으로 계정을 안전하게 보호하세요.</Text>
+            <Text className="text-sm text-slate-600 dark:text-slate-400 text-center px-8">주기적인 패스워드 변경으로 계정을 안전하게 보호하세요.</Text>
           </View>
 
           <View className="gap-6">
             <View className="gap-2">
-              <Text className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">새 패스워드</Text>
+              <Text className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">새 패스워드</Text>
               <TextInput
-                className="h-14 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl px-4 text-base text-gray-900 dark:text-white"
+                className="h-14 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 text-base text-slate-900 dark:text-white"
                 value={newPassword}
                 onChangeText={setNewPassword}
                 placeholder="새 패스워드를 입력하세요"
@@ -100,9 +100,9 @@ export default function PasswordChangeScreen() {
             </View>
 
             <View className="gap-2">
-              <Text className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">새 패스워드 확인</Text>
+              <Text className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">새 패스워드 확인</Text>
               <TextInput
-                className="h-14 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl px-4 text-base text-gray-900 dark:text-white"
+                className="h-14 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 text-base text-slate-900 dark:text-white"
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
                 placeholder="새 패스워드를 다시 입력하세요"
@@ -112,7 +112,7 @@ export default function PasswordChangeScreen() {
             </View>
 
             <TouchableOpacity
-              className={`h-14 bg-blue-600 dark:bg-blue-500 rounded-xl justify-center items-center mt-4 shadow-sm ${loading ? 'opacity-70' : ''}`}
+              className={`h-14 bg-primary-600 dark:bg-primary-500 rounded-xl justify-center items-center mt-4 shadow-sm ${loading ? 'opacity-70' : ''}`}
               onPress={handleChangePassword}
               disabled={loading}
             >

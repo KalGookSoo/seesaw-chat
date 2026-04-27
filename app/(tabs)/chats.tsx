@@ -57,23 +57,23 @@ export default function ChatsScreen() {
   };
 
   const renderChatRoomItem = ({ item }: { item: ChatRoomExtended }) => (
-    <TouchableOpacity className="flex-row bg-white dark:bg-gray-900 rounded-xl p-4 mb-4 shadow-sm" onPress={() => handleRoomPress(item)} activeOpacity={0.7}>
-      <View className="w-14 h-14 rounded-full bg-blue-600 dark:bg-blue-500 justify-center items-center mr-4">
+    <TouchableOpacity className="flex-row bg-white dark:bg-slate-900 rounded-xl p-4 mb-4 shadow-sm" onPress={() => handleRoomPress(item)} activeOpacity={0.7}>
+      <View className="w-14 h-14 rounded-full bg-primary-600 dark:bg-primary-500 justify-center items-center mr-4">
         <Text className="text-white text-2xl font-semibold">{item.name ? item.name[0] : '?'}</Text>
       </View>
       <View className="flex-1 justify-center">
         <View className="flex-row justify-between items-center mb-1">
-          <Text className="flex-1 text-lg font-semibold text-gray-900 dark:text-white mr-2" numberOfLines={1}>
+          <Text className="flex-1 text-lg font-semibold text-slate-900 dark:text-white mr-2" numberOfLines={1}>
             {item.name || '알 수 없는 채팅방'}
           </Text>
-          <Text className="text-xs text-gray-400 dark:text-gray-500 font-medium">{formatTime(item.lastMessageAt)}</Text>
+          <Text className="text-xs text-slate-400 dark:text-slate-500 font-medium">{formatTime(item.lastMessageAt)}</Text>
         </View>
         <View className="flex-row justify-between items-center">
-          <Text className="flex-1 text-sm text-gray-600 dark:text-gray-400 mr-2" numberOfLines={1}>
+          <Text className="flex-1 text-sm text-slate-600 dark:text-slate-400 mr-2" numberOfLines={1}>
             {item.lastMessage || '메시지가 없습니다.'}
           </Text>
           {item.unreadCount !== undefined && item.unreadCount > 0 && (
-            <View className="bg-blue-600 dark:bg-blue-500 rounded-full min-w-[24px] h-6 px-2 justify-center items-center">
+            <View className="bg-primary-600 dark:bg-primary-500 rounded-full min-w-[24px] h-6 px-2 justify-center items-center">
               <Text className="text-white text-xs font-semibold">{item.unreadCount > 99 ? '99+' : item.unreadCount}</Text>
             </View>
           )}
@@ -83,11 +83,11 @@ export default function ChatsScreen() {
   );
 
   return (
-    <View className="flex-1 bg-gray-50 dark:bg-gray-950">
+    <View className="flex-1 bg-slate-50 dark:bg-slate-950">
       {/* Header */}
-      <View className="px-5 pt-16 pb-5 bg-white dark:bg-gray-900">
-        <Text className="text-3xl font-bold text-gray-900 dark:text-white">채팅</Text>
-        <Text className="text-sm text-gray-500 dark:text-gray-400 mt-1">{chatRooms.length}개의 대화</Text>
+      <View className="px-5 pt-16 pb-5 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
+        <Text className="text-3xl font-bold text-slate-900 dark:text-white">채팅</Text>
+        <Text className="text-sm text-slate-500 dark:text-slate-400 mt-1">{chatRooms.length}개의 대화</Text>
       </View>
 
       <FlatList

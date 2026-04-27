@@ -62,28 +62,28 @@ export default function ProfileEditScreen() {
   }
 
   return (
-    <View className="flex-1 bg-white dark:bg-gray-950">
-      <View className="flex-row items-center justify-between px-4 pt-16 pb-4 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800">
+    <View className="flex-1 bg-slate-50 dark:bg-slate-950">
+      <View className="flex-row items-center justify-between px-4 pt-16 pb-4 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
         <TouchableOpacity onPress={() => router.back()} className="w-10 h-10 justify-center items-center">
-          <MaterialIcons name="chevron-left" size={24} className="text-gray-900 dark:text-white" />
+          <MaterialIcons name="chevron-left" size={24} className="text-slate-900 dark:text-white" />
         </TouchableOpacity>
-        <Text className="text-lg font-bold text-gray-900 dark:text-white">프로필 편집</Text>
+        <Text className="text-lg font-bold text-slate-900 dark:text-white">프로필 편집</Text>
         <View className="w-10" />
       </View>
 
       <View className="flex-1 px-6">
         <View className="items-center my-10">
-          <View className="w-[100px] h-[100px] rounded-full bg-blue-600 dark:bg-blue-500 justify-center items-center mb-4 shadow-md">
+          <View className="w-[100px] h-[100px] rounded-full bg-primary-600 dark:bg-primary-500 justify-center items-center mb-4 shadow-md">
             <Text className="text-white text-4xl font-bold">{name[0] || '?'}</Text>
           </View>
-          <Text className="text-sm text-gray-500 dark:text-gray-400">프로필 사진 변경 기능은 준비 중입니다</Text>
+          <Text className="text-sm text-slate-500 dark:text-slate-400">프로필 사진 변경 기능은 준비 중입니다</Text>
         </View>
 
         <View className="gap-6">
           <View className="gap-2">
-            <Text className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">이름</Text>
+            <Text className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">이름</Text>
             <TextInput
-              className="h-14 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl px-4 text-base text-gray-900 dark:text-white"
+              className="h-14 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 text-base text-slate-900 dark:text-white"
               value={name}
               onChangeText={setName}
               placeholder="이름을 입력하세요"
@@ -92,7 +92,7 @@ export default function ProfileEditScreen() {
           </View>
 
           <TouchableOpacity
-            className={`h-14 bg-blue-600 dark:bg-blue-500 rounded-xl justify-center items-center mt-4 shadow-sm ${loading ? 'opacity-70' : ''}`}
+            className={`h-14 bg-primary-600 dark:bg-primary-500 rounded-xl justify-center items-center mt-4 shadow-sm ${loading ? 'opacity-70' : ''}`}
             onPress={handleSave}
             disabled={loading}
           >
