@@ -273,7 +273,7 @@ export default function FriendsScreen() {
 
   const renderPendingItem = ({ item }: { item: FriendResponse }) => {
     // userId는 보낸 사람의 ID입니다.
-    const isSentByMe = item.userId === myUserId;
+    const isSentByMe = item.requesterId === myUserId;
     const isReceivedByMe = !isSentByMe;
 
     return (
@@ -284,7 +284,6 @@ export default function FriendsScreen() {
         <View style={styles.friendInfo}>
           <Text style={styles.friendName}>{item.friend.name}</Text>
           <Text style={styles.friendUsername}>@{item.friend.username}</Text>
-          <Text style={styles.statusLabel}>{isSentByMe ? '보낸 요청' : '받은 요청'}</Text>
         </View>
         <View style={styles.pendingActions}>
           {isReceivedByMe && (
@@ -398,22 +397,22 @@ export default function FriendsScreen() {
               </View>
             ) : (
               <>
-                {pendingRequests.filter((r) => r.userId !== myUserId).length > 0 && (
+                {pendingRequests.filter((r) => r.requesterId !== myUserId).length > 0 && (
                   <View style={styles.subSection}>
                     <Text style={styles.subSectionTitle}>받은 요청</Text>
                     {pendingRequests
-                      .filter((r) => r.userId !== myUserId)
+                      .filter((r) => r.requesterId !== myUserId)
                       .map((item) => (
                         <View key={item.friend.id}>{renderPendingItem({ item })}</View>
                       ))}
                   </View>
                 )}
 
-                {pendingRequests.filter((r) => r.userId === myUserId).length > 0 && (
+                {pendingRequests.filter((r) => r.requesterId === myUserId).length > 0 && (
                   <View style={styles.subSection}>
                     <Text style={styles.subSectionTitle}>보낸 요청</Text>
                     {pendingRequests
-                      .filter((r) => r.userId === myUserId)
+                      .filter((r) => r.requesterId === myUserId)
                       .map((item) => (
                         <View key={item.friend.id}>{renderPendingItem({ item })}</View>
                       ))}

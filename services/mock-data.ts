@@ -27,9 +27,9 @@ export interface UserSearch {
   name?: string;
 }
 
-
 export interface FriendResponse {
   userId: string;
+  requesterId: string;
   friend: UserResponse;
   status: 'PENDING' | 'ACCEPTED' | 'BLOCKED';
 }

@@ -760,6 +760,9 @@ components:
         userId:
           type: string
           description: 내 식별자
+        requesterId:
+          type: string
+          description: 요청자 식별자
         friend:
           $ref: "#/components/schemas/UserResponse"
           description: 친구
