@@ -1,9 +1,9 @@
 import React from 'react';
 import { Colors } from '@/constants/theme';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Tabs } from 'expo-router';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { IconSymbol } from '@/components/ui/icon-symbol';
 import { HapticTab } from '@/components/haptic-tab';
 
 export default function TabLayout() {
@@ -21,21 +21,21 @@ export default function TabLayout() {
         name="friends"
         options={{
           title: '친구',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.2.fill" color={color} />,
+          tabBarIcon: ({ color }) => <MaterialIcons size={28} name="people" color={color} />,
         }}
       />
       <Tabs.Screen
         name="chats"
         options={{
           title: '채팅',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="message.fill" color={color} />,
+          tabBarIcon: ({ color }) => <MaterialIcons size={28} name="chat" color={color} />,
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
           title: '설정',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="gearshape.fill" color={color} />,
+          tabBarIcon: ({ color }) => <MaterialIcons size={28} name="settings" color={color} />,
         }}
       />
       <Tabs.Screen

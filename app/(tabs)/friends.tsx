@@ -1,37 +1,24 @@
 import React, { useState } from 'react';
-import { RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { router } from 'expo-router';
-import { colors, fontSize, fontWeight, spacing } from '@/constants/design';
 import { Alert } from '@/services/alert';
 import { chatService, friendService } from '@/services/api';
 import type { UserResponse } from '@/services/mock-data';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { router } from 'expo-router';
+import { RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
-import { IconSymbol } from '@/components/ui/icon-symbol';
 import { CreateChatRoomModal } from '@/app/features/friends/components/CreateChatRoomModal';
+import { FriendListItem } from '@/app/features/friends/components/FriendListItem';
+import { FriendTabs } from '@/app/features/friends/components/FriendTabs';
+import { PendingRequestItem } from '@/app/features/friends/components/PendingRequestItem';
 import { SearchUserModal } from '@/app/features/friends/components/SearchUserModal';
 import { RelationshipStatus, UserDetailModal } from '@/app/features/friends/components/UserDetailModal';
-import { FriendListItem } from '@/app/features/friends/components/FriendListItem';
-import { PendingRequestItem } from '@/app/features/friends/components/PendingRequestItem';
-import { FriendTabs } from '@/app/features/friends/components/FriendTabs';
 import { useFriends } from '@/app/features/friends/hooks/useFriends';
 
 export default function FriendsScreen() {
   const [activeTab, setActiveTab] = useState<'ACCEPTED' | 'PENDING' | 'BLOCKED'>('ACCEPTED');
 
   // Custom Hook for State & Logic
-  const {
-    myUserId,
-    friends,
-    pendingRequests,
-    blockedFriends,
-    refreshing,
-    handleRefresh,
-    handleAcceptRequest,
-    handleRejectRequest,
-    handleRemoveFriend,
-    handleBlockUser,
-    loadData,
-  } = useFriends();
+  const { myUserId, friends, pendingRequests, blockedFriends, refreshing, handleRefresh, handleAcceptRequest, handleRejectRequest, handleRemoveFriend, handleBlockUser, loadData } = useFriends();
 
   // Screen-specific UI State
   const [showSearchModal, setShowSearchModal] = useState(false);
@@ -170,57 +157,56 @@ export default function FriendsScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1 bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <View style={styles.header}>
+      <View className="flex-row justify-between items-center px-5 pt-16 pb-5 bg-white dark:bg-gray-950">
         <View>
-          <Text style={styles.headerTitle}>친구</Text>
-          <Text style={styles.headerSubtitle}>{friends.length}명의 친구</Text>
+          <Text className="text-3xl font-bold text-gray-900 dark:text-white">친구</Text>
+          <Text className="text-sm text-gray-500 dark:text-gray-400 mt-1">{friends.length}명의 친구</Text>
         </View>
-        <View style={styles.headerActions}>
-          <TouchableOpacity style={styles.actionButton} onPress={handleRefresh}>
-            <IconSymbol name="arrow.clockwise" size={20} color={colors.primary[600]} />
+        <View className="flex-row gap-2">
+          <TouchableOpacity className="w-11 h-11 rounded-xl bg-blue-50 dark:bg-blue-900/30 justify-center items-center" onPress={handleRefresh}>
+            <MaterialIcons name="refresh" size={20} color="#2563eb" />
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.actionButton, isCreateChatMode && styles.activeActionButton]}
+            className={`w-11 h-11 rounded-xl justify-center items-center ${isCreateChatMode ? 'bg-gray-200 dark:bg-gray-800' : 'bg-blue-50 dark:bg-blue-900/30'}`}
             onPress={() => {
               setIsCreateChatMode(!isCreateChatMode);
               setSelectedFriends([]);
             }}
           >
-            <IconSymbol name={isCreateChatMode ? 'xmark' : 'message'} size={20} color={isCreateChatMode ? colors.gray[600] : colors.primary[600]} />
+            <MaterialIcons name={isCreateChatMode ? 'close' : 'chat'} size={20} color={isCreateChatMode ? '#4b5563' : '#2563eb'} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButton} onPress={() => setShowSearchModal(true)}>
-            <IconSymbol name="person.badge.plus" size={22} color={colors.primary[600]} />
+          <TouchableOpacity className="w-11 h-11 rounded-xl bg-blue-50 dark:bg-blue-900/30 justify-center items-center" onPress={() => setShowSearchModal(true)}>
+            <MaterialIcons name="person-add" size={22} color="#2563eb" />
           </TouchableOpacity>
         </View>
       </View>
 
       {isCreateChatMode && (
-        <View style={styles.createModeBanner}>
-          <Text style={styles.createModeText}>{selectedFriends.length}명 선택됨</Text>
-          <TouchableOpacity style={[styles.createButton, selectedFriends.length === 0 && styles.createButtonDisabled]} disabled={selectedFriends.length === 0} onPress={() => setShowCreateModal(true)}>
-            <Text style={styles.createButtonText}>채팅방 생성</Text>
+        <View className="flex-row justify-between items-center px-5 py-3 bg-blue-600 dark:bg-blue-700">
+          <Text className="text-white text-base font-semibold">{selectedFriends.length}명 선택됨</Text>
+          <TouchableOpacity
+            className={`bg-white dark:bg-gray-100 px-4 py-1.5 rounded-lg ${selectedFriends.length === 0 ? 'opacity-50' : ''}`}
+            disabled={selectedFriends.length === 0}
+            onPress={() => setShowCreateModal(true)}
+          >
+            <Text className="text-blue-600 dark:text-blue-700 text-sm font-bold">채팅방 생성</Text>
           </TouchableOpacity>
         </View>
       )}
 
       {/* Tabs */}
-      <FriendTabs
-        activeTab={activeTab}
-        onChangeTab={setActiveTab}
-        friendsCount={friends.length}
-        pendingCount={pendingRequests.length}
-      />
+      <FriendTabs activeTab={activeTab} onChangeTab={setActiveTab} friendsCount={friends.length} pendingCount={pendingRequests.length} />
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}>
+      <ScrollView className="flex-1 px-5" showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}>
         {activeTab === 'ACCEPTED' && (
-          <View style={styles.section}>
+          <View className="mt-5">
             {friends.length === 0 ? (
-              <View style={styles.emptyState}>
-                <Text style={styles.emptyIcon}>👋</Text>
-                <Text style={styles.emptyTitle}>아직 친구가 없습니다</Text>
-                <Text style={styles.emptySubtitle}>친구를 추가하여 채팅을 시작해보세요!</Text>
+              <View className="items-center py-12 px-6">
+                <Text className="text-6xl mb-4">👋</Text>
+                <Text className="text-xl font-semibold text-gray-900 dark:text-white mb-2">아직 친구가 없습니다</Text>
+                <Text className="text-base text-gray-500 dark:text-gray-400 text-center">친구를 추가하여 채팅을 시작해보세요!</Text>
               </View>
             ) : (
               friends.map((item) => (
@@ -238,47 +224,33 @@ export default function FriendsScreen() {
         )}
 
         {activeTab === 'PENDING' && (
-          <View style={styles.section}>
+          <View className="mt-5">
             {pendingRequests.length === 0 ? (
-              <View style={styles.emptyState}>
-                <Text style={styles.emptyIcon}>✉️</Text>
-                <Text style={styles.emptyTitle}>대기 중인 요청이 없습니다</Text>
-                <Text style={styles.emptySubtitle}>새로운 친구를 찾아보세요!</Text>
+              <View className="items-center py-12 px-6">
+                <Text className="text-6xl mb-4">✉️</Text>
+                <Text className="text-xl font-semibold text-gray-900 dark:text-white mb-2">대기 중인 요청이 없습니다</Text>
+                <Text className="text-base text-gray-500 dark:text-gray-400 text-center">새로운 친구를 찾아보세요!</Text>
               </View>
             ) : (
               <>
                 {pendingRequests.filter((r) => r.requesterId !== myUserId).length > 0 && (
-                  <View style={styles.subSection}>
-                    <Text style={styles.subSectionTitle}>받은 요청</Text>
+                  <View className="mt-2 mb-4">
+                    <Text className="text-xs font-bold text-gray-400 dark:text-gray-500 mb-2 ml-1 uppercase tracking-wider">받은 요청</Text>
                     {pendingRequests
                       .filter((r) => r.requesterId !== myUserId)
                       .map((item) => (
-                        <PendingRequestItem
-                          key={item.friend.id}
-                          item={item}
-                          myUserId={myUserId}
-                          onShowDetail={handleShowDetail}
-                          onAccept={handleAcceptRequest}
-                          onReject={handleRejectRequest}
-                        />
+                        <PendingRequestItem key={item.friend.id} item={item} myUserId={myUserId} onShowDetail={handleShowDetail} onAccept={handleAcceptRequest} onReject={handleRejectRequest} />
                       ))}
                   </View>
                 )}
 
                 {pendingRequests.filter((r) => r.requesterId === myUserId).length > 0 && (
-                  <View style={styles.subSection}>
-                    <Text style={styles.subSectionTitle}>보낸 요청</Text>
+                  <View className="mt-2 mb-4">
+                    <Text className="text-xs font-bold text-gray-400 dark:text-gray-500 mb-2 ml-1 uppercase tracking-wider">보낸 요청</Text>
                     {pendingRequests
                       .filter((r) => r.requesterId === myUserId)
                       .map((item) => (
-                        <PendingRequestItem
-                          key={item.friend.id}
-                          item={item}
-                          myUserId={myUserId}
-                          onShowDetail={handleShowDetail}
-                          onAccept={handleAcceptRequest}
-                          onReject={handleRejectRequest}
-                        />
+                        <PendingRequestItem key={item.friend.id} item={item} myUserId={myUserId} onShowDetail={handleShowDetail} onAccept={handleAcceptRequest} onReject={handleRejectRequest} />
                       ))}
                   </View>
                 )}
@@ -288,11 +260,11 @@ export default function FriendsScreen() {
         )}
 
         {activeTab === 'BLOCKED' && (
-          <View style={styles.section}>
+          <View className="mt-5">
             {blockedFriends.length === 0 ? (
-              <View style={styles.emptyState}>
-                <Text style={styles.emptyIcon}>🚫</Text>
-                <Text style={styles.emptyTitle}>차단된 사용자가 없습니다</Text>
+              <View className="items-center py-12 px-6">
+                <Text className="text-6xl mb-4">🚫</Text>
+                <Text className="text-xl font-semibold text-gray-900 dark:text-white mb-2">차단된 사용자가 없습니다</Text>
               </View>
             ) : (
               blockedFriends.map((item) => (
@@ -370,111 +342,3 @@ export default function FriendsScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background.secondary,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingTop: 60,
-    paddingBottom: spacing.lg,
-    backgroundColor: colors.background.primary,
-  },
-  headerTitle: {
-    fontSize: fontSize['3xl'],
-    fontWeight: fontWeight.bold,
-    color: colors.gray[900],
-  },
-  headerSubtitle: {
-    fontSize: fontSize.sm,
-    color: colors.gray[500],
-    marginTop: spacing.xs,
-  },
-  headerActions: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  actionButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    backgroundColor: colors.primary[50],
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  activeActionButton: {
-    backgroundColor: colors.gray[200],
-  },
-  createModeBanner: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    backgroundColor: colors.primary[600],
-  },
-  createModeText: {
-    color: '#fff',
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
-  },
-  createButton: {
-    backgroundColor: '#fff',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    borderRadius: 8,
-  },
-  createButtonDisabled: {
-    opacity: 0.5,
-  },
-  createButtonText: {
-    color: colors.primary[600],
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.bold,
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: spacing.lg,
-  },
-  section: {
-    marginTop: spacing.lg,
-  },
-  subSection: {
-    marginTop: spacing.sm,
-    marginBottom: spacing.md,
-  },
-  subSectionTitle: {
-    fontSize: fontSize.xs,
-    fontWeight: fontWeight.bold,
-    color: colors.gray[400],
-    marginBottom: spacing.sm,
-    marginLeft: spacing.xs,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  emptyState: {
-    alignItems: 'center',
-    paddingVertical: spacing['3xl'],
-    paddingHorizontal: spacing.xl,
-  },
-  emptyIcon: {
-    fontSize: 64,
-    marginBottom: spacing.md,
-  },
-  emptyTitle: {
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.semibold,
-    color: colors.gray[900],
-    marginBottom: spacing.sm,
-  },
-  emptySubtitle: {
-    fontSize: fontSize.base,
-    color: colors.gray[500],
-    textAlign: 'center',
-  },
-});

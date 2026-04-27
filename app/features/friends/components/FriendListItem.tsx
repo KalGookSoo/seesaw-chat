@@ -1,8 +1,7 @@
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { colors, fontSize, fontWeight, borderRadius } from '@/constants/design';
-import { IconSymbol } from '@/components/ui/icon-symbol';
 import type { FriendResponse } from '@/services/mock-data';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { Text, TouchableOpacity, View } from 'react-native';
 
 interface FriendListItemProps {
   item: FriendResponse;
@@ -15,93 +14,33 @@ interface FriendListItemProps {
 export const FriendListItem: React.FC<FriendListItemProps> = ({ item, isCreateChatMode, isSelected, onPress, onLongPress }) => {
   return (
     <TouchableOpacity
-      style={[styles.friendCard, isCreateChatMode && isSelected && styles.selectedFriendCard]}
+      className={`flex-row items-center py-3 border-b border-gray-100 dark:border-gray-800 ${
+        isCreateChatMode && isSelected ? 'bg-blue-50 dark:bg-blue-900 rounded-lg px-3 -mx-3 border-b-transparent' : ''
+      }`}
       onPress={onPress}
       onLongPress={onLongPress}
       activeOpacity={0.7}
     >
-      <View style={styles.avatar}>
-        <Text style={styles.avatarText}>{item.friend.name[0]}</Text>
+      <View className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-800/50 justify-center items-center mr-4">
+        <Text className="text-lg font-bold text-blue-600 dark:text-blue-400">{item.friend.name[0]}</Text>
       </View>
-      <View style={styles.friendInfo}>
-        <Text style={styles.friendName}>{item.friend.name}</Text>
-        <Text style={styles.friendUsername}>@{item.friend.username}</Text>
+      <View className="flex-1">
+        <Text className="text-base font-semibold text-gray-900 dark:text-white mb-1">{item.friend.name}</Text>
+        <Text className="text-sm text-gray-500 dark:text-gray-400">@{item.friend.username}</Text>
       </View>
       {isCreateChatMode ? (
-        <View style={[styles.checkbox, isSelected && styles.checkboxSelected]}>
-          {isSelected && <IconSymbol name="checkmark" size={14} color="#fff" />}
+        <View
+          className={`w-6 h-6 rounded-full border-2 justify-center items-center ${
+            isSelected ? 'bg-blue-600 border-blue-600 dark:bg-blue-500 dark:border-blue-500' : 'border-gray-300 dark:border-gray-600'
+          }`}
+        >
+          {isSelected && <MaterialIcons name="check" size={14} color="#fff" />}
         </View>
       ) : (
-        <View style={styles.statusBadge}>
-          <View style={styles.onlineDot} />
+        <View className="p-2">
+          <View className="w-2 h-2 rounded-full bg-green-500" />
         </View>
       )}
     </TouchableOpacity>
   );
 };
-
-const styles = StyleSheet.create({
-  friendCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray[100],
-  },
-  selectedFriendCard: {
-    backgroundColor: colors.primary[50],
-    borderRadius: borderRadius.lg,
-    paddingHorizontal: 12,
-    marginHorizontal: -12,
-    borderBottomColor: 'transparent',
-  },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: borderRadius.full,
-    backgroundColor: colors.primary[100],
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  avatarText: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.bold,
-    color: colors.primary[600],
-  },
-  friendInfo: {
-    flex: 1,
-  },
-  friendName: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
-    color: colors.gray[900],
-    marginBottom: 4,
-  },
-  friendUsername: {
-    fontSize: fontSize.sm,
-    color: colors.gray[500],
-  },
-  statusBadge: {
-    padding: 8,
-  },
-  onlineDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: colors.success,
-  },
-  checkbox: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: colors.gray[300],
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  checkboxSelected: {
-    backgroundColor: colors.primary[600],
-    borderColor: colors.primary[600],
-  },
-});

@@ -1,9 +1,8 @@
 import React, { useCallback, useState } from 'react';
-import { borderRadius, colors, fontSize, fontWeight, shadows, spacing } from '@/constants/design';
 import { chatService } from '@/services/api';
 import type { ChatRoomExtended } from '@/services/mock-data';
 import { router, useFocusEffect } from 'expo-router';
-import { FlatList, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, RefreshControl, Text, TouchableOpacity, View } from 'react-native';
 
 export default function ChatsScreen() {
   const [chatRooms, setChatRooms] = useState<ChatRoomExtended[]>([]);
@@ -58,24 +57,24 @@ export default function ChatsScreen() {
   };
 
   const renderChatRoomItem = ({ item }: { item: ChatRoomExtended }) => (
-    <TouchableOpacity style={styles.roomCard} onPress={() => handleRoomPress(item)} activeOpacity={0.7}>
-      <View style={styles.avatar}>
-        <Text style={styles.avatarText}>{item.name ? item.name[0] : '?'}</Text>
+    <TouchableOpacity className="flex-row bg-white dark:bg-gray-900 rounded-xl p-4 mb-4 shadow-sm" onPress={() => handleRoomPress(item)} activeOpacity={0.7}>
+      <View className="w-14 h-14 rounded-full bg-blue-600 dark:bg-blue-500 justify-center items-center mr-4">
+        <Text className="text-white text-2xl font-semibold">{item.name ? item.name[0] : '?'}</Text>
       </View>
-      <View style={styles.roomInfo}>
-        <View style={styles.roomHeader}>
-          <Text style={styles.roomName} numberOfLines={1}>
+      <View className="flex-1 justify-center">
+        <View className="flex-row justify-between items-center mb-1">
+          <Text className="flex-1 text-lg font-semibold text-gray-900 dark:text-white mr-2" numberOfLines={1}>
             {item.name || '알 수 없는 채팅방'}
           </Text>
-          <Text style={styles.timeText}>{formatTime(item.lastMessageAt)}</Text>
+          <Text className="text-xs text-gray-400 dark:text-gray-500 font-medium">{formatTime(item.lastMessageAt)}</Text>
         </View>
-        <View style={styles.roomFooter}>
-          <Text style={styles.lastMessage} numberOfLines={1}>
+        <View className="flex-row justify-between items-center">
+          <Text className="flex-1 text-sm text-gray-600 dark:text-gray-400 mr-2" numberOfLines={1}>
             {item.lastMessage || '메시지가 없습니다.'}
           </Text>
           {item.unreadCount !== undefined && item.unreadCount > 0 && (
-            <View style={styles.unreadBadge}>
-              <Text style={styles.unreadText}>{item.unreadCount > 99 ? '99+' : item.unreadCount}</Text>
+            <View className="bg-blue-600 dark:bg-blue-500 rounded-full min-w-[24px] h-6 px-2 justify-center items-center">
+              <Text className="text-white text-xs font-semibold">{item.unreadCount > 99 ? '99+' : item.unreadCount}</Text>
             </View>
           )}
         </View>
@@ -84,153 +83,27 @@ export default function ChatsScreen() {
   );
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1 bg-gray-50 dark:bg-gray-950">
       {/* Header */}
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.headerTitle}>채팅</Text>
-          <Text style={styles.headerSubtitle}>{chatRooms.length}개의 대화</Text>
-        </View>
+      <View className="px-5 pt-16 pb-5 bg-white dark:bg-gray-900">
+        <Text className="text-3xl font-bold text-gray-900 dark:text-white">채팅</Text>
+        <Text className="text-sm text-gray-500 dark:text-gray-400 mt-1">{chatRooms.length}개의 대화</Text>
       </View>
 
       <FlatList
         data={chatRooms}
         renderItem={renderChatRoomItem}
         keyExtractor={(item) => item.id}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colors.primary[600]} />}
-        contentContainerStyle={[styles.listContent, chatRooms.length === 0 && styles.emptyListContent]}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#2563eb" />}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 20, flexGrow: 1 }}
         ListEmptyComponent={
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyIcon}>💬</Text>
-            <Text style={styles.emptyTitle}>채팅방이 없습니다</Text>
-            <Text style={styles.emptySubtitle}>친구와 대화를 시작해보세요!</Text>
+          <View className="flex-1 items-center justify-center py-12 px-8">
+            <Text className="text-6xl mb-4">💬</Text>
+            <Text className="text-xl font-semibold text-gray-900 dark:text-white mb-2">채팅방이 없습니다</Text>
+            <Text className="text-base text-gray-500 dark:text-gray-400 text-center">친구와 대화를 시작해보세요!</Text>
           </View>
         }
       />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background.secondary,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingTop: 60,
-    paddingBottom: spacing.lg,
-    backgroundColor: colors.background.primary,
-  },
-  headerTitle: {
-    fontSize: fontSize['3xl'],
-    fontWeight: fontWeight.bold,
-    color: colors.gray[900],
-  },
-  headerSubtitle: {
-    fontSize: fontSize.sm,
-    color: colors.gray[500],
-    marginTop: spacing.xs,
-  },
-  listContent: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.lg,
-  },
-  emptyListContent: {
-    flex: 1,
-  },
-  roomCard: {
-    flexDirection: 'row',
-    backgroundColor: colors.background.primary,
-    borderRadius: borderRadius.xl,
-    padding: spacing.md,
-    marginBottom: spacing.md,
-    ...shadows.sm,
-  },
-  avatar: {
-    width: 56,
-    height: 56,
-    borderRadius: borderRadius.full,
-    backgroundColor: colors.primary[600],
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: spacing.md,
-  },
-  avatarText: {
-    color: '#fff',
-    fontSize: fontSize['2xl'],
-    fontWeight: fontWeight.semibold,
-  },
-  roomInfo: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  roomHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.xs,
-  },
-  roomName: {
-    flex: 1,
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
-    color: colors.gray[900],
-    marginRight: spacing.sm,
-  },
-  timeText: {
-    fontSize: fontSize.xs,
-    color: colors.gray[400],
-    fontWeight: fontWeight.medium,
-  },
-  roomFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  lastMessage: {
-    flex: 1,
-    fontSize: fontSize.sm,
-    color: colors.gray[600],
-    marginRight: spacing.sm,
-  },
-  unreadBadge: {
-    backgroundColor: colors.primary[600],
-    borderRadius: borderRadius.full,
-    minWidth: 24,
-    height: 24,
-    paddingHorizontal: spacing.sm,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  unreadText: {
-    color: '#fff',
-    fontSize: fontSize.xs,
-    fontWeight: fontWeight.semibold,
-  },
-  emptyState: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: spacing['3xl'],
-    paddingHorizontal: spacing.xl,
-  },
-  emptyIcon: {
-    fontSize: 64,
-    marginBottom: spacing.md,
-  },
-  emptyTitle: {
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.semibold,
-    color: colors.gray[900],
-    marginBottom: spacing.sm,
-  },
-  emptySubtitle: {
-    fontSize: fontSize.base,
-    color: colors.gray[500],
-    textAlign: 'center',
-  },
-});

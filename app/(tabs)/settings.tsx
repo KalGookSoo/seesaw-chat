@@ -2,12 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { Alert } from '@/services/alert';
 import { authService, pushService, userService } from '@/services/api';
 import type { UserResponse } from '@/services/mock-data';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { router } from 'expo-router';
-import { ScrollView, StyleSheet, Switch, TouchableOpacity, View } from 'react-native';
-
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
+import { ScrollView, Switch, Text, TouchableOpacity, View } from 'react-native';
 
 export default function SettingsScreen() {
   const [pushEnabled, setPushEnabled] = useState(true);
@@ -31,7 +28,6 @@ export default function SettingsScreen() {
   const handlePushToggle = async (value: boolean) => {
     try {
       if (value) {
-        // Mock push subscription - in real app, would use actual web push API
         await pushService.subscribe('https://fcm.googleapis.com/fcm/send/mock-endpoint', 'mock-p256dh-key', 'mock-auth-key', navigator.userAgent, 'iOS Device');
         Alert.alert('알림 설정', '푸시 알림이 활성화되었습니다.');
       } else {
@@ -60,209 +56,113 @@ export default function SettingsScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
-      <View style={styles.header}>
-        <ThemedText type="title">설정</ThemedText>
+    <View className="flex-1 bg-gray-50 dark:bg-gray-950">
+      <View className="px-5 pt-16 pb-5 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800">
+        <Text className="text-3xl font-bold text-gray-900 dark:text-white">설정</Text>
       </View>
 
-      <ScrollView style={styles.flex1} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
-        <View style={styles.profileSection}>
-          <View style={styles.avatar}>
-            <ThemedText style={styles.avatarText}>{currentUser?.name ? currentUser.name[0] : '?'}</ThemedText>
+      <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
+        <View className="flex-row items-center px-5 py-6 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800">
+          <View className="w-16 h-16 rounded-full bg-blue-600 dark:bg-blue-500 justify-center items-center mr-4 shadow-sm">
+            <Text className="text-white text-2xl font-bold">{currentUser?.name ? currentUser.name[0] : '?'}</Text>
           </View>
-          <View style={styles.profileInfo}>
-            <ThemedText style={styles.profileName}>{currentUser?.name || '사용자'}</ThemedText>
-            <ThemedText style={styles.profileUsername}>@{currentUser?.username || '-'}</ThemedText>
-          </View>
-        </View>
-
-        <View style={styles.section}>
-          <ThemedText style={styles.sectionTitle}>알림</ThemedText>
-          <View style={styles.settingItem}>
-            <View style={styles.settingInfo}>
-              <IconSymbol name="bell.fill" size={20} color="#007AFF" style={styles.settingIcon} />
-              <View>
-                <ThemedText style={styles.settingLabel}>푸시 알림</ThemedText>
-                <ThemedText style={styles.settingDescription}>새 메시지 알림을 받습니다</ThemedText>
-              </View>
-            </View>
-            <Switch value={pushEnabled} onValueChange={handlePushToggle} trackColor={{ false: '#E8E8E8', true: '#007AFF' }} thumbColor="#fff" />
+          <View className="flex-1">
+            <Text className="text-xl font-bold text-gray-900 dark:text-white mb-1">{currentUser?.name || '사용자'}</Text>
+            <Text className="text-sm text-gray-500 dark:text-gray-400">@{currentUser?.username || '-'}</Text>
           </View>
         </View>
 
-        <View style={styles.section}>
-          <ThemedText style={styles.sectionTitle}>계정</ThemedText>
-          <TouchableOpacity style={styles.settingItem} onPress={() => router.push('/settings/profile')}>
-            <View style={styles.settingInfo}>
-              <IconSymbol name="person.circle.fill" size={20} color="#007AFF" style={styles.settingIcon} />
+        <View className="pt-6 pb-2">
+          <Text className="text-xs font-bold text-gray-400 dark:text-gray-500 px-5 mb-2 uppercase tracking-wider">알림</Text>
+          <View className="flex-row justify-between items-center px-5 py-4 bg-white dark:bg-gray-900 border-b border-gray-50 dark:border-gray-800/50">
+            <View className="flex-1 flex-row items-center">
+              <View className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 justify-center items-center mr-3">
+                <MaterialIcons name="notifications" size={18} color="#2563eb" />
+              </View>
               <View>
-                <ThemedText style={styles.settingLabel}>프로필 편집</ThemedText>
-                <ThemedText style={styles.settingDescription}>이름과 프로필 사진을 변경합니다</ThemedText>
+                <Text className="text-base font-semibold text-gray-900 dark:text-white">푸시 알림</Text>
+                <Text className="text-xs text-gray-500 dark:text-gray-400">새 메시지 알림을 받습니다</Text>
               </View>
             </View>
-            <IconSymbol name="chevron.right" size={16} color="#999" />
+            <Switch value={pushEnabled} onValueChange={handlePushToggle} trackColor={{ false: '#d1d5db', true: '#2563eb' }} thumbColor="#fff" />
+          </View>
+        </View>
+
+        <View className="pt-6 pb-2">
+          <Text className="text-xs font-bold text-gray-400 dark:text-gray-500 px-5 mb-2 uppercase tracking-wider">계정</Text>
+          <TouchableOpacity
+            className="flex-row justify-between items-center px-5 py-4 bg-white dark:bg-gray-900 border-b border-gray-50 dark:border-gray-800/50"
+            onPress={() => router.push('/settings/profile')}
+          >
+            <View className="flex-row items-center">
+              <View className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 justify-center items-center mr-3">
+                <MaterialIcons name="account-circle" size={18} color="#2563eb" />
+              </View>
+              <View>
+                <Text className="text-base font-semibold text-gray-900 dark:text-white">프로필 편집</Text>
+                <Text className="text-xs text-gray-500 dark:text-gray-400">이름과 프로필 사진을 변경합니다</Text>
+              </View>
+            </View>
+            <MaterialIcons name="chevron-right" size={16} color="#9ca3af" />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.settingItem} onPress={() => router.push('/settings/password')}>
-            <View style={styles.settingInfo}>
-              <IconSymbol name="lock.fill" size={20} color="#007AFF" style={styles.settingIcon} />
+          <TouchableOpacity
+            className="flex-row justify-between items-center px-5 py-4 bg-white dark:bg-gray-900 border-b border-gray-50 dark:border-gray-800/50"
+            onPress={() => router.push('/settings/password')}
+          >
+            <View className="flex-row items-center">
+              <View className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 justify-center items-center mr-3">
+                <MaterialIcons name="lock" size={18} color="#2563eb" />
+              </View>
               <View>
-                <ThemedText style={styles.settingLabel}>패스워드 변경</ThemedText>
-                <ThemedText style={styles.settingDescription}>계정 패스워드를 변경합니다</ThemedText>
+                <Text className="text-base font-semibold text-gray-900 dark:text-white">패스워드 변경</Text>
+                <Text className="text-xs text-gray-500 dark:text-gray-400">계정 패스워드를 변경합니다</Text>
               </View>
             </View>
-            <IconSymbol name="chevron.right" size={16} color="#999" />
+            <MaterialIcons name="chevron-right" size={16} color="#9ca3af" />
           </TouchableOpacity>
         </View>
 
-        <View style={styles.section}>
-          <ThemedText style={styles.sectionTitle}>정보</ThemedText>
-          <TouchableOpacity style={styles.settingItem}>
-            <View style={styles.settingInfo}>
-              <IconSymbol name="info.circle.fill" size={20} color="#007AFF" style={styles.settingIcon} />
-              <ThemedText style={styles.settingLabel}>앱 정보</ThemedText>
+        <View className="pt-6 pb-2">
+          <Text className="text-xs font-bold text-gray-400 dark:text-gray-500 px-5 mb-2 uppercase tracking-wider">정보</Text>
+          <TouchableOpacity className="flex-row justify-between items-center px-5 py-4 bg-white dark:bg-gray-900 border-b border-gray-50 dark:border-gray-800/50">
+            <View className="flex-row items-center">
+              <View className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 justify-center items-center mr-3">
+                <MaterialIcons name="info" size={18} color="#2563eb" />
+              </View>
+              <Text className="text-base font-semibold text-gray-900 dark:text-white">앱 정보</Text>
             </View>
-            <View style={styles.versionContainer}>
-              <ThemedText style={styles.versionText}>v1.0.0</ThemedText>
-              <IconSymbol name="chevron.right" size={16} color="#999" />
+            <View className="flex-row items-center gap-2">
+              <Text className="text-sm text-gray-400 dark:text-gray-500">v1.0.0</Text>
+              <MaterialIcons name="chevron-right" size={16} color="#9ca3af" />
             </View>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.settingItem}>
-            <View style={styles.settingInfo}>
-              <IconSymbol name="doc.text.fill" size={20} color="#007AFF" style={styles.settingIcon} />
-              <ThemedText style={styles.settingLabel}>이용약관</ThemedText>
+          <TouchableOpacity className="flex-row justify-between items-center px-5 py-4 bg-white dark:bg-gray-900 border-b border-gray-50 dark:border-gray-800/50">
+            <View className="flex-row items-center">
+              <View className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 justify-center items-center mr-3">
+                <MaterialIcons name="description" size={18} color="#2563eb" />
+              </View>
+              <Text className="text-base font-semibold text-gray-900 dark:text-white">이용약관</Text>
             </View>
-            <IconSymbol name="chevron.right" size={16} color="#999" />
+            <MaterialIcons name="chevron-right" size={16} color="#9ca3af" />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.settingItem}>
-            <View style={styles.settingInfo}>
-              <IconSymbol name="hand.raised.fill" size={20} color="#007AFF" style={styles.settingIcon} />
-              <ThemedText style={styles.settingLabel}>개인정보처리방침</ThemedText>
+          <TouchableOpacity className="flex-row justify-between items-center px-5 py-4 bg-white dark:bg-gray-900 border-b border-gray-50 dark:border-gray-800/50">
+            <View className="flex-row items-center">
+              <View className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 justify-center items-center mr-3">
+                <MaterialIcons name="front-hand" size={18} color="#2563eb" />
+              </View>
+              <Text className="text-base font-semibold text-gray-900 dark:text-white">개인정보처리방침</Text>
             </View>
-            <IconSymbol name="chevron.right" size={16} color="#999" />
+            <MaterialIcons name="chevron-right" size={16} color="#9ca3af" />
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <ThemedText style={styles.logoutText}>로그아웃</ThemedText>
+        <TouchableOpacity className="mx-5 mt-8 h-14 rounded-xl bg-red-500 dark:bg-red-600 justify-center items-center shadow-sm" onPress={handleLogout}>
+          <Text className="text-white text-lg font-bold">로그아웃</Text>
         </TouchableOpacity>
       </ScrollView>
-    </ThemedView>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 60,
-    paddingBottom: 16,
-  },
-  flex1: {
-    flex: 1,
-  },
-  contentContainer: {
-    paddingBottom: 100,
-  },
-  profileSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E8E8E8',
-  },
-  avatar: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: '#007AFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  avatarText: {
-    color: '#fff',
-    fontSize: 28,
-    fontWeight: '600',
-  },
-  profileInfo: {
-    flex: 1,
-  },
-  profileName: {
-    fontSize: 20,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  profileUsername: {
-    fontSize: 14,
-    opacity: 0.6,
-  },
-  section: {
-    paddingTop: 24,
-    paddingBottom: 8,
-  },
-  sectionTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    opacity: 0.6,
-    paddingHorizontal: 16,
-    marginBottom: 8,
-    textTransform: 'uppercase',
-  },
-  settingItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F5F5F5',
-  },
-  settingInfo: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  settingIcon: {
-    marginRight: 12,
-  },
-  settingLabel: {
-    fontSize: 16,
-    fontWeight: '500',
-    marginBottom: 2,
-  },
-  settingDescription: {
-    fontSize: 13,
-    opacity: 0.6,
-  },
-  versionContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  versionText: {
-    fontSize: 14,
-    opacity: 0.6,
-  },
-  logoutButton: {
-    marginHorizontal: 16,
-    marginTop: 32,
-    paddingVertical: 14,
-    borderRadius: 12,
-    backgroundColor: '#FF3B30',
-    alignItems: 'center',
-  },
-  logoutText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-});

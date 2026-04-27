@@ -1,6 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { colors, fontSize, fontWeight, shadows } from '@/constants/design';
+import { Text, TouchableOpacity, View } from 'react-native';
 
 type TabType = 'ACCEPTED' | 'PENDING' | 'BLOCKED';
 
@@ -13,48 +12,29 @@ interface FriendTabsProps {
 
 export const FriendTabs: React.FC<FriendTabsProps> = ({ activeTab, onChangeTab, friendsCount, pendingCount }) => {
   return (
-    <View style={styles.tabContainer}>
-      <TouchableOpacity style={[styles.tab, activeTab === 'ACCEPTED' && styles.activeTab]} onPress={() => onChangeTab('ACCEPTED')}>
-        <Text style={[styles.tabText, activeTab === 'ACCEPTED' && styles.activeTabText]}>내 친구 {friendsCount > 0 && `(${friendsCount})`}</Text>
+    <View className="flex-row px-4 pt-2 pb-4 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 shadow-sm">
+      <TouchableOpacity
+        className={`flex-1 items-center py-3 border-b-2 ${activeTab === 'ACCEPTED' ? 'border-blue-600 dark:border-blue-500' : 'border-transparent'}`}
+        onPress={() => onChangeTab('ACCEPTED')}
+      >
+        <Text className={`text-base font-medium ${activeTab === 'ACCEPTED' ? 'text-blue-600 dark:text-blue-500 font-bold' : 'text-gray-500 dark:text-gray-400'}`}>
+          내 친구 {friendsCount > 0 && `(${friendsCount})`}
+        </Text>
       </TouchableOpacity>
-      <TouchableOpacity style={[styles.tab, activeTab === 'PENDING' && styles.activeTab]} onPress={() => onChangeTab('PENDING')}>
-        <Text style={[styles.tabText, activeTab === 'PENDING' && styles.activeTabText]}>요청 {pendingCount > 0 && `(${pendingCount})`}</Text>
+      <TouchableOpacity
+        className={`flex-1 items-center py-3 border-b-2 ${activeTab === 'PENDING' ? 'border-blue-600 dark:border-blue-500' : 'border-transparent'}`}
+        onPress={() => onChangeTab('PENDING')}
+      >
+        <Text className={`text-base font-medium ${activeTab === 'PENDING' ? 'text-blue-600 dark:text-blue-500 font-bold' : 'text-gray-500 dark:text-gray-400'}`}>
+          요청 {pendingCount > 0 && `(${pendingCount})`}
+        </Text>
       </TouchableOpacity>
-      <TouchableOpacity style={[styles.tab, activeTab === 'BLOCKED' && styles.activeTab]} onPress={() => onChangeTab('BLOCKED')}>
-        <Text style={[styles.tabText, activeTab === 'BLOCKED' && styles.activeTabText]}>차단</Text>
+      <TouchableOpacity
+        className={`flex-1 items-center py-3 border-b-2 ${activeTab === 'BLOCKED' ? 'border-blue-600 dark:border-blue-500' : 'border-transparent'}`}
+        onPress={() => onChangeTab('BLOCKED')}
+      >
+        <Text className={`text-base font-medium ${activeTab === 'BLOCKED' ? 'text-blue-600 dark:text-blue-500 font-bold' : 'text-gray-500 dark:text-gray-400'}`}>차단</Text>
       </TouchableOpacity>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  tabContainer: {
-    flexDirection: 'row',
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 16,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray[100],
-    ...shadows.sm,
-  },
-  tab: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
-  },
-  activeTab: {
-    borderBottomColor: colors.primary[600],
-  },
-  tabText: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.medium,
-    color: colors.gray[500],
-  },
-  activeTabText: {
-    color: colors.primary[600],
-    fontWeight: fontWeight.bold,
-  },
-});

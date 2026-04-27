@@ -4,6 +4,7 @@ import { Stack, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 
 import 'react-native-reanimated';
+import '../global.css';
 
 import { setCurrentPathname } from '@/services/api-client';
 

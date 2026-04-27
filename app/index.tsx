@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { borderRadius, colors, fontSize, fontWeight, shadows, spacing } from '@/constants/design';
 import { Alert } from '@/services/alert';
 import { authService } from '@/services/api';
 import { router, useLocalSearchParams } from 'expo-router';
-import { KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function LoginScreen() {
   const { redirect } = useLocalSearchParams<{ redirect: string }>();
@@ -12,7 +11,6 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // 이미 로그인된 상태라면 메인 화면으로 이동
     authService.isLoggedIn().then((loggedIn) => {
       if (loggedIn) {
         router.replace('/(tabs)/chats');
@@ -29,7 +27,6 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       await authService.login(username, password);
-      // 리디렉션 파라미터가 있으면 해당 페이지로, 없으면 기본 페이지로 이동
       if (redirect) {
         router.replace(redirect as any);
       } else {
@@ -47,27 +44,27 @@ export default function LoginScreen() {
   };
 
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.container}>
-      <View style={styles.content}>
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} className="flex-1 bg-gray-50 dark:bg-gray-950">
+      <View className="flex-1 justify-center px-6">
         {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.logoContainer}>
-            <View style={styles.logo}>
-              <Text style={styles.logoText}>💬</Text>
+        <View className="items-center mb-12">
+          <View className="mb-4">
+            <View className="w-20 h-20 rounded-2xl justify-center items-center bg-blue-600 dark:bg-blue-500 shadow-lg">
+              <Text className="text-4xl">💬</Text>
             </View>
           </View>
-          <Text style={styles.title}>Seesaw Chat</Text>
-          <Text style={styles.subtitle}>간편하게 연결되는 실시간 채팅</Text>
+          <Text className="text-4xl font-bold text-gray-900 dark:text-white mb-2">Seesaw Chat</Text>
+          <Text className="text-base text-gray-500 dark:text-gray-400 font-medium">간편하게 연결되는 실시간 채팅</Text>
         </View>
 
         {/* Form */}
-        <View style={styles.form}>
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>아이디</Text>
+        <View className="gap-6">
+          <View className="gap-2">
+            <Text className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">아이디</Text>
             <TextInput
-              style={[styles.input, username && styles.inputFilled]}
+              className={`h-14 border-2 rounded-xl px-4 text-base bg-white dark:bg-gray-900 text-gray-900 dark:text-white ${username ? 'border-blue-300 dark:border-blue-700' : 'border-gray-200 dark:border-gray-800'}`}
               placeholder="아이디를 입력하세요"
-              placeholderTextColor={colors.gray[400]}
+              placeholderTextColor="#9ca3af"
               value={username}
               onChangeText={setUsername}
               autoCapitalize="none"
@@ -75,12 +72,12 @@ export default function LoginScreen() {
             />
           </View>
 
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>패스워드</Text>
+          <View className="gap-2">
+            <Text className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">패스워드</Text>
             <TextInput
-              style={[styles.input, password && styles.inputFilled]}
+              className={`h-14 border-2 rounded-xl px-4 text-base bg-white dark:bg-gray-900 text-gray-900 dark:text-white ${password ? 'border-blue-300 dark:border-blue-700' : 'border-gray-200 dark:border-gray-800'}`}
               placeholder="패스워드를 입력하세요"
-              placeholderTextColor={colors.gray[400]}
+              placeholderTextColor="#9ca3af"
               value={password}
               onChangeText={setPassword}
               secureTextEntry
@@ -88,108 +85,20 @@ export default function LoginScreen() {
             />
           </View>
 
-          <TouchableOpacity style={[styles.primaryButton, loading && styles.buttonDisabled]} onPress={handleLogin} disabled={loading} activeOpacity={0.8}>
-            <Text style={styles.primaryButtonText}>{loading ? '로그인 중...' : '로그인'}</Text>
+          <TouchableOpacity
+            className={`h-14 rounded-xl mt-4 bg-blue-600 dark:bg-blue-500 justify-center items-center shadow-md ${loading ? 'opacity-50' : ''}`}
+            onPress={handleLogin}
+            disabled={loading}
+            activeOpacity={0.8}
+          >
+            <Text className="text-white text-lg font-semibold">{loading ? '로그인 중...' : '로그인'}</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.secondaryButton} onPress={handleSignup} activeOpacity={0.7}>
-            <Text style={styles.secondaryButtonText}>아직 계정이 없으신가요? 회원가입</Text>
+          <TouchableOpacity className="py-4 items-center" onPress={handleSignup} activeOpacity={0.7}>
+            <Text className="text-blue-600 dark:text-blue-400 text-sm font-medium">아직 계정이 없으신가요? 회원가입</Text>
           </TouchableOpacity>
         </View>
       </View>
     </KeyboardAvoidingView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background.secondary,
-  },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: spacing.lg,
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: spacing['3xl'],
-  },
-  logoContainer: {
-    marginBottom: spacing.lg,
-  },
-  logo: {
-    width: 80,
-    height: 80,
-    borderRadius: borderRadius['2xl'],
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.primary[600],
-    ...shadows.lg,
-  },
-  logoText: {
-    fontSize: 40,
-  },
-  title: {
-    fontSize: fontSize['4xl'],
-    fontWeight: fontWeight.bold,
-    color: colors.gray[900],
-    marginBottom: spacing.sm,
-  },
-  subtitle: {
-    fontSize: fontSize.base,
-    color: colors.gray[500],
-    fontWeight: fontWeight.medium,
-  },
-  form: {
-    gap: spacing.lg,
-  },
-  inputContainer: {
-    gap: spacing.sm,
-  },
-  label: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
-    color: colors.gray[700],
-    marginLeft: spacing.xs,
-  },
-  input: {
-    height: 56,
-    borderWidth: 2,
-    borderColor: colors.gray[200],
-    borderRadius: borderRadius.xl,
-    paddingHorizontal: spacing.md,
-    fontSize: fontSize.base,
-    backgroundColor: colors.background.primary,
-    color: colors.gray[900],
-  },
-  inputFilled: {
-    borderColor: colors.primary[300],
-  },
-  primaryButton: {
-    height: 56,
-    borderRadius: borderRadius.xl,
-    marginTop: spacing.md,
-    backgroundColor: colors.primary[600],
-    justifyContent: 'center',
-    alignItems: 'center',
-    ...shadows.md,
-  },
-  primaryButtonText: {
-    color: '#fff',
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
-  },
-  secondaryButton: {
-    paddingVertical: spacing.md,
-    alignItems: 'center',
-  },
-  secondaryButtonText: {
-    color: colors.primary[600],
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
-  },
-  buttonDisabled: {
-    opacity: 0.5,
-  },
-});

@@ -1,6 +1,5 @@
 import React from 'react';
-import { Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { borderRadius, colors, fontSize, fontWeight, spacing } from '@/constants/design';
+import { Modal, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 interface CreateChatRoomModalProps {
   visible: boolean;
@@ -11,35 +10,29 @@ interface CreateChatRoomModalProps {
   onCreate: () => void;
 }
 
-export function CreateChatRoomModal({
-  visible,
-  onClose,
-  selectedFriendsCount,
-  newChatRoomName,
-  onNameChange,
-  onCreate,
-}: CreateChatRoomModalProps) {
+export function CreateChatRoomModal({ visible, onClose, selectedFriendsCount, newChatRoomName, onNameChange, onCreate }: CreateChatRoomModalProps) {
   return (
     <Modal visible={visible} transparent animationType="slide">
-      <View style={styles.overlay}>
-        <View style={styles.createRoomCard}>
-          <Text style={styles.modalTitle}>새 채팅방 생성</Text>
-          <Text style={styles.modalSubtitle}>{selectedFriendsCount}명의 친구 초대됨</Text>
+      <View className="flex-1 bg-black/50 justify-center items-center p-6">
+        <View className="w-full bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-xl">
+          <Text className="text-2xl font-bold text-gray-900 dark:text-white">새 채팅방 생성</Text>
+          <Text className="text-sm text-gray-500 dark:text-gray-400 mb-6">{selectedFriendsCount}명의 친구 초대됨</Text>
 
           <TextInput
-            style={styles.roomNameInput}
+            className="h-[52px] bg-gray-100 dark:bg-gray-800 rounded-xl px-4 text-base text-gray-900 dark:text-white mb-6"
             placeholder="채팅방 이름을 입력하세요"
+            placeholderTextColor="#9ca3af"
             value={newChatRoomName}
             onChangeText={onNameChange}
             autoFocus
           />
 
-          <View style={styles.modalActions}>
-            <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
-              <Text style={styles.cancelButtonText}>취소</Text>
+          <View className="flex-row gap-4">
+            <TouchableOpacity className="flex-1 h-[52px] rounded-xl bg-gray-100 dark:bg-gray-800 justify-center items-center" onPress={onClose}>
+              <Text className="text-base text-gray-600 dark:text-gray-300 font-semibold">취소</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.confirmButton} onPress={onCreate}>
-              <Text style={styles.confirmButtonText}>생성하기</Text>
+            <TouchableOpacity className="flex-[2] h-[52px] rounded-xl bg-blue-600 dark:bg-blue-500 justify-center items-center" onPress={onCreate}>
+              <Text className="text-base text-white font-bold">생성하기</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -47,67 +40,3 @@ export function CreateChatRoomModal({
     </Modal>
   );
 }
-
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: spacing.xl,
-  },
-  createRoomCard: {
-    width: '100%',
-    backgroundColor: '#fff',
-    borderRadius: borderRadius['2xl'],
-    padding: spacing.xl,
-  },
-  modalTitle: {
-    fontSize: fontSize['2xl'],
-    fontWeight: fontWeight.bold,
-    color: colors.gray[900],
-  },
-  modalSubtitle: {
-    fontSize: fontSize.sm,
-    color: colors.gray[500],
-    marginBottom: spacing.lg,
-  },
-  roomNameInput: {
-    height: 52,
-    backgroundColor: colors.gray[100],
-    borderRadius: borderRadius.xl,
-    paddingHorizontal: spacing.md,
-    fontSize: fontSize.base,
-    marginBottom: spacing.xl,
-  },
-  modalActions: {
-    flexDirection: 'row',
-    gap: spacing.md,
-  },
-  cancelButton: {
-    flex: 1,
-    height: 52,
-    borderRadius: borderRadius.xl,
-    backgroundColor: colors.gray[100],
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  cancelButtonText: {
-    fontSize: fontSize.base,
-    color: colors.gray[600],
-    fontWeight: fontWeight.semibold,
-  },
-  confirmButton: {
-    flex: 2,
-    height: 52,
-    borderRadius: borderRadius.xl,
-    backgroundColor: colors.primary[600],
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  confirmButtonText: {
-    fontSize: fontSize.base,
-    color: '#fff',
-    fontWeight: fontWeight.bold,
-  },
-});

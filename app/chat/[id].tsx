@@ -1,15 +1,12 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { borderRadius, colors, fontSize, fontWeight, shadows, spacing } from '@/constants/design';
 import { Alert } from '@/services/alert';
 import { authService, chatService, friendService } from '@/services/api';
 import { BASE_URL } from '@/services/api-client';
 import type { ChatRoomResponse, FriendResponse, MessageResponse, UserResponse } from '@/services/mock-data';
 import { tokenStorage } from '@/services/storage';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { Dimensions, FlatList, KeyboardAvoidingView, Modal, Platform, Pressable, SafeAreaView, ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
-
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { ThemedText } from '@/components/themed-text';
+import { Dimensions, FlatList, KeyboardAvoidingView, Modal, Platform, Pressable, SafeAreaView, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -28,13 +25,10 @@ export default function ChatDetailScreen() {
   const flatListRef = useRef<FlatList>(null);
   const isMounted = useRef(true);
 
-  // Drawer & Modals
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [friends, setFriends] = useState<FriendResponse[]>([]);
   const [selectedFriends, setSelectedFriends] = useState<string[]>([]);
-
-  // Mocks for feature toggles
   const [isNotificationsEnabled, setIsNotificationsEnabled] = useState(true);
   const [isFavorite, setIsFavorite] = useState(false);
 
@@ -89,7 +83,6 @@ export default function ChatDetailScreen() {
       retryCount.current += 1;
       console.log(`[WebSocket] 재연결 시도 (${retryCount.current}/${MAX_RETRIES})...`);
 
-      // 지수 백오프 또는 단순 지연 (여기서는 2초)
       retryTimerRef.current = setTimeout(() => {
         if (isMounted.current) {
           connectWebSocket();
@@ -147,7 +140,6 @@ export default function ChatDetailScreen() {
         console.log('[WebSocket] 연결 종료:', event.code, event.reason);
         setWsStatus(WebSocket.CLOSED);
 
-        // 정상적인 종료(1000)가 아니면 재연결 시도
         if (event.code !== 1000) {
           handleReconnect();
         }
@@ -216,7 +208,7 @@ export default function ChatDetailScreen() {
           if (typeof id === 'string') {
             try {
               await chatService.removeMember(id, member.id);
-              await loadChatRoom(); // 멤버 목록 갱신
+              await loadChatRoom();
             } catch (error) {
               Alert.handleApiError(error, '멤버 내보내기 실패');
             }
@@ -229,7 +221,6 @@ export default function ChatDetailScreen() {
   const handleOpenInvite = async () => {
     try {
       const friendsData = await friendService.getFriends();
-      // 이미 멤버인 친구 제외
       const memberIds = chatRoom?.members?.map((m) => m.id) || [];
       const notMembers = friendsData.filter((f) => f.status === 'ACCEPTED' && !memberIds.includes(f.friend.id));
       setFriends(notMembers);
@@ -245,7 +236,7 @@ export default function ChatDetailScreen() {
     try {
       await chatService.addMembers(id, selectedFriends);
       setShowInviteModal(false);
-      await loadChatRoom(); // 멤버 목록 갱신
+      await loadChatRoom();
       Alert.alert('초대 완료', '새로운 멤버가 추가되었습니다.');
     } catch (error) {
       Alert.handleApiError(error, '멤버 초대 실패');
@@ -268,11 +259,10 @@ export default function ChatDetailScreen() {
   const isCreator = chatRoom?.createdBy === currentUserId.current;
 
   const renderMessage = ({ item, index }: { item: MessageResponse; index: number }) => {
-    // 알림 메시지거나 발신자 정보가 없는 경우 시스템 메시지로 처리
     if (item.type === 'NOTIFICATION' || !item.sender) {
       return (
-        <View style={styles.notificationContainer}>
-          <ThemedText style={styles.notificationText}>{item.content}</ThemedText>
+        <View className="self-center bg-gray-100 dark:bg-gray-800 px-4 py-1 rounded-full my-3">
+          <Text className="text-xs text-gray-600 dark:text-gray-400 font-medium">{item.content}</Text>
         </View>
       );
     }
@@ -282,12 +272,12 @@ export default function ChatDetailScreen() {
     const showSender = !prevMessage || prevMessage.sender?.id !== item.sender?.id || !isMyMessage;
 
     return (
-      <View style={[styles.messageContainer, isMyMessage ? styles.myMessageContainer : styles.otherMessageContainer]}>
-        {!isMyMessage && showSender && <ThemedText style={styles.senderName}>{item.sender.name}</ThemedText>}
-        <View style={[styles.messageBubble, isMyMessage ? styles.myMessageBubble : styles.otherMessageBubble]}>
-          <ThemedText style={[styles.messageText, isMyMessage ? styles.myMessageText : styles.otherMessageText]}>{item.content}</ThemedText>
+      <View className={`mb-4 max-w-[75%] ${isMyMessage ? 'self-end items-end' : 'self-start items-start'}`}>
+        {!isMyMessage && showSender && <Text className="text-xs opacity-70 mb-1 ml-1 text-gray-700 dark:text-gray-300">{item.sender.name}</Text>}
+        <View className={`rounded-2xl px-4 py-2 shadow-sm ${isMyMessage ? 'bg-blue-600 dark:bg-blue-500 rounded-tr-[2px]' : 'bg-gray-100 dark:bg-gray-800 rounded-tl-[2px]'}`}>
+          <Text className={`text-base leading-5 ${isMyMessage ? 'text-white' : 'text-gray-900 dark:text-white'}`}>{item.content}</Text>
         </View>
-        <ThemedText style={[styles.messageTime, isMyMessage ? styles.myMessageTime : styles.otherMessageTime]}>{formatMessageTime(item.createdDate)}</ThemedText>
+        <Text className={`text-[10px] opacity-50 mt-1 ${isMyMessage ? 'text-right' : 'text-left ml-1'} text-gray-500 dark:text-gray-400`}>{formatMessageTime(item.createdDate)}</Text>
       </View>
     );
   };
@@ -304,20 +294,20 @@ export default function ChatDetailScreen() {
   }, [id, loadInitialData, connectWebSocket, cleanupWebSocket]);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView className="flex-1 bg-white dark:bg-gray-950">
       <Stack.Screen
         options={{
           title: chatRoom?.name || '채팅',
           headerShown: true,
           headerRight: () => (
-            <View style={styles.headerRight}>
+            <View className="flex-row items-center gap-2">
               {wsStatus === WebSocket.CONNECTING && (
-                <View style={styles.statusIndicator}>
-                  <ThemedText style={styles.statusText}>연결 중...</ThemedText>
+                <View className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
+                  <Text className="text-[10px] text-gray-500 dark:text-gray-400 font-bold">연결 중...</Text>
                 </View>
               )}
-              <TouchableOpacity onPress={() => setIsDrawerOpen(true)} style={styles.headerButton}>
-                <IconSymbol name="line.3.horizontal" size={24} color={colors.gray[900]} />
+              <TouchableOpacity onPress={() => setIsDrawerOpen(true)} className="p-2">
+                <MaterialIcons name="menu" size={24} className="text-gray-900 dark:text-white" />
               </TouchableOpacity>
             </View>
           ),
@@ -325,43 +315,43 @@ export default function ChatDetailScreen() {
       />
 
       {isConnectionFailed ? (
-        <View style={styles.errorState}>
-          <IconSymbol name="wifi.slash" size={48} color={colors.gray[300]} />
-          <ThemedText style={styles.errorTitle}>연결에 실패했습니다</ThemedText>
-          <ThemedText style={styles.errorDescription}>서버와의 연결이 원활하지 않습니다.{'\n'}인터넷 연결을 확인하고 다시 시도해주세요.</ThemedText>
+        <View className="flex-1 items-center justify-center px-8">
+          <MaterialIcons name="wifi-off" size={48} color="#d1d5db" />
+          <Text className="text-xl font-bold text-gray-900 dark:text-white mt-4">연결에 실패했습니다</Text>
+          <Text className="text-base text-gray-500 dark:text-gray-400 text-center mt-2">서버와의 연결이 원활하지 않습니다.{'\n'}인터넷 연결을 확인하고 다시 시도해주세요.</Text>
           <TouchableOpacity
-            style={styles.retryButton}
+            className="mt-6 px-6 py-3 bg-blue-600 dark:bg-blue-500 rounded-xl"
             onPress={() => {
               retryCount.current = 0;
               connectWebSocket();
             }}
           >
-            <ThemedText style={styles.retryButtonText}>다시 연결하기</ThemedText>
+            <Text className="text-white font-semibold">다시 연결하기</Text>
           </TouchableOpacity>
         </View>
       ) : (
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.flex1} keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} className="flex-1" keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}>
           <FlatList
             data={messages}
             renderItem={renderMessage}
             keyExtractor={(item) => item.id}
-            contentContainerStyle={styles.messagesList}
+            contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 20 }}
             onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
             onLayout={() => flatListRef.current?.scrollToEnd({ animated: true })}
             ref={flatListRef}
             ListEmptyComponent={
-              <View style={styles.emptyContainer}>
-                <ThemedText style={styles.emptyText}>메시지가 없습니다.</ThemedText>
-                <ThemedText style={styles.emptySubtext}>첫 메시지를 보내보세요!</ThemedText>
+              <View className="flex-1 items-center justify-center mt-24">
+                <Text className="text-lg font-bold text-gray-900 dark:text-white mb-1">메시지가 없습니다.</Text>
+                <Text className="text-sm opacity-60 text-gray-500 dark:text-gray-400">첫 메시지를 보내보세요!</Text>
               </View>
             }
           />
 
-          <View style={styles.inputContainer}>
+          <View className="flex-row px-4 py-3 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950 items-end">
             <TextInput
-              style={styles.input}
+              className="flex-1 min-h-[40px] max-h-[120px] bg-gray-100 dark:bg-gray-900 rounded-2xl px-4 py-2 text-base text-gray-900 dark:text-white"
               placeholder={wsStatus === WebSocket.CONNECTING ? '연결 중...' : '메시지를 입력하세요...'}
-              placeholderTextColor={colors.gray[400]}
+              placeholderTextColor="#9ca3af"
               value={inputText}
               onChangeText={setInputText}
               multiline
@@ -369,11 +359,11 @@ export default function ChatDetailScreen() {
               editable={wsStatus === WebSocket.OPEN}
             />
             <TouchableOpacity
-              style={[styles.sendButton, (!inputText.trim() || wsStatus !== WebSocket.OPEN) && styles.sendButtonDisabled]}
+              className={`w-10 h-10 rounded-full justify-center items-center ml-2 ${inputText.trim() && wsStatus === WebSocket.OPEN ? 'bg-blue-600 dark:bg-blue-500' : 'bg-gray-100 dark:bg-gray-800'}`}
               onPress={handleSend}
               disabled={!inputText.trim() || wsStatus !== WebSocket.OPEN}
             >
-              <IconSymbol name="paperplane.fill" size={20} color={inputText.trim() && wsStatus === WebSocket.OPEN ? '#fff' : colors.gray[300]} />
+              <MaterialIcons name="send" size={20} className={inputText.trim() && wsStatus === WebSocket.OPEN ? 'text-white' : 'text-gray-400 dark:text-gray-600'} />
             </TouchableOpacity>
           </View>
         </KeyboardAvoidingView>
@@ -381,66 +371,66 @@ export default function ChatDetailScreen() {
 
       {/* Drawer Menu */}
       <Modal visible={isDrawerOpen} transparent animationType="none">
-        <Pressable style={styles.drawerOverlay} onPress={() => setIsDrawerOpen(false)}>
-          <Pressable style={styles.drawerContent} onPress={(e) => e.stopPropagation()}>
-            <SafeAreaView style={styles.flex1}>
-              <View style={styles.drawerHeader}>
-                <ThemedText style={styles.drawerTitle}>채팅방 정보</ThemedText>
+        <Pressable className="flex-1 bg-black/50 flex-row justify-end" onPress={() => setIsDrawerOpen(false)}>
+          <Pressable className="w-[80%] bg-white dark:bg-gray-950 h-full shadow-2xl" onPress={(e) => e.stopPropagation()}>
+            <SafeAreaView className="flex-1">
+              <View className="flex-row justify-between items-center p-5 border-b border-gray-100 dark:border-gray-800">
+                <Text className="text-xl font-bold text-gray-900 dark:text-white">채팅방 정보</Text>
                 <TouchableOpacity onPress={() => setIsDrawerOpen(false)}>
-                  <IconSymbol name="xmark" size={24} color={colors.gray[600]} />
+                  <MaterialIcons name="close" size={24} color="#4b5563" />
                 </TouchableOpacity>
               </View>
 
-              <ScrollView style={styles.flex1}>
+              <ScrollView className="flex-1">
                 {/* Feature Toggles */}
-                <View style={styles.drawerSection}>
-                  <TouchableOpacity style={styles.drawerItem} onPress={() => setIsNotificationsEnabled(!isNotificationsEnabled)}>
-                    <View style={styles.drawerItemLeft}>
-                      <IconSymbol name={isNotificationsEnabled ? 'bell.fill' : 'bell.slash.fill'} size={20} color={colors.gray[600]} />
-                      <ThemedText style={styles.drawerItemText}>알림 {isNotificationsEnabled ? '켜짐' : '꺼짐'}</ThemedText>
+                <View className="p-5 border-b border-gray-100 dark:border-gray-800">
+                  <TouchableOpacity className="flex-row justify-between items-center py-3" onPress={() => setIsNotificationsEnabled(!isNotificationsEnabled)}>
+                    <View className="flex-row items-center gap-3">
+                      <MaterialIcons name={isNotificationsEnabled ? 'notifications' : 'notifications-off'} size={20} className="text-gray-500" />
+                      <Text className="text-base text-gray-700 dark:text-gray-300">알림 {isNotificationsEnabled ? '켜짐' : '꺼짐'}</Text>
                     </View>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.drawerItem} onPress={() => setIsFavorite(!isFavorite)}>
-                    <View style={styles.drawerItemLeft}>
-                      <IconSymbol name={isFavorite ? 'star.fill' : 'star'} size={20} color={isFavorite ? colors.warning : colors.gray[600]} />
-                      <ThemedText style={styles.drawerItemText}>즐겨찾기</ThemedText>
+                  <TouchableOpacity className="flex-row justify-between items-center py-3" onPress={() => setIsFavorite(!isFavorite)}>
+                    <View className="flex-row items-center gap-3">
+                      <MaterialIcons name={isFavorite ? 'star' : 'star-outline'} size={20} className={isFavorite ? 'text-yellow-500' : 'text-gray-500'} />
+                      <Text className="text-base text-gray-700 dark:text-gray-300">즐겨찾기</Text>
                     </View>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.drawerItem}>
-                    <View style={styles.drawerItemLeft}>
-                      <IconSymbol name="gearshape.fill" size={20} color={colors.gray[600]} />
-                      <ThemedText style={styles.drawerItemText}>환경설정</ThemedText>
+                  <TouchableOpacity className="flex-row justify-between items-center py-3">
+                    <View className="flex-row items-center gap-3">
+                      <MaterialIcons name="settings" size={20} className="text-gray-500" />
+                      <Text className="text-base text-gray-700 dark:text-gray-300">환경설정</Text>
                     </View>
                   </TouchableOpacity>
                 </View>
 
                 {/* Member List */}
-                <View style={styles.drawerSection}>
-                  <View style={styles.sectionHeader}>
-                    <ThemedText style={styles.sectionTitle}>대화상대 ({chatRoom?.members?.length || 0})</ThemedText>
-                    <TouchableOpacity style={styles.inviteButton} onPress={handleOpenInvite}>
-                      <IconSymbol name="person.badge.plus.fill" size={20} color={colors.primary[600]} />
+                <View className="p-5 border-b border-gray-100 dark:border-gray-800">
+                  <View className="flex-row justify-between items-center mb-4">
+                    <Text className="text-base font-bold text-gray-900 dark:text-white">대화상대 ({chatRoom?.members?.length || 0})</Text>
+                    <TouchableOpacity className="p-1" onPress={handleOpenInvite}>
+                      <MaterialIcons name="person-add" size={20} className="text-blue-600 dark:text-blue-500" />
                     </TouchableOpacity>
                   </View>
 
                   {chatRoom?.members?.map((member) => (
-                    <View key={member.id} style={styles.memberItem}>
-                      <View style={styles.memberInfo}>
-                        <View style={styles.memberAvatar}>
-                          <ThemedText style={styles.avatarInitial}>{member.name[0]}</ThemedText>
+                    <View key={member.id} className="flex-row justify-between items-center py-2">
+                      <View className="flex-row items-center gap-3">
+                        <View className="w-9 h-9 rounded-full bg-blue-50 dark:bg-blue-900/30 justify-center items-center">
+                          <Text className="text-base font-bold text-blue-600 dark:text-blue-400">{member.name[0]}</Text>
                         </View>
-                        <ThemedText style={styles.memberName}>{member.name}</ThemedText>
+                        <Text className="text-base text-gray-900 dark:text-white">{member.name}</Text>
                         {member.id === chatRoom.createdBy && (
-                          <View style={styles.creatorBadge}>
-                            <ThemedText style={styles.creatorBadgeText}>방장</ThemedText>
+                          <View className="bg-yellow-500 px-1.5 py-0.5 rounded">
+                            <Text className="text-[10px] font-bold text-white">방장</Text>
                           </View>
                         )}
-                        {member.id === currentUserId.current && <ThemedText style={styles.meLabel}>(나)</ThemedText>}
+                        {member.id === currentUserId.current && <Text className="text-xs text-gray-400 dark:text-gray-500">(나)</Text>}
                       </View>
 
                       {isCreator && member.id !== currentUserId.current && (
-                        <TouchableOpacity style={styles.kickButton} onPress={() => handleKickMember(member)}>
-                          <IconSymbol name="person.fill.xmark" size={18} color={colors.error} />
+                        <TouchableOpacity className="p-1" onPress={() => handleKickMember(member)}>
+                          <MaterialIcons name="person-remove" size={18} className="text-red-500" />
                         </TouchableOpacity>
                       )}
                     </View>
@@ -448,10 +438,10 @@ export default function ChatDetailScreen() {
                 </View>
               </ScrollView>
 
-              <View style={styles.drawerFooter}>
-                <TouchableOpacity style={styles.leaveButton} onPress={handleLeaveRoom}>
-                  <IconSymbol name="rectangle.portrait.and.arrow.right" size={20} color={colors.gray[600]} />
-                  <ThemedText style={styles.leaveButtonText}>채팅방 나가기</ThemedText>
+              <View className="p-5 pb-8">
+                <TouchableOpacity className="flex-row items-center gap-3 p-2" onPress={handleLeaveRoom}>
+                  <MaterialIcons name="exit-to-app" size={20} className="text-gray-500" />
+                  <Text className="text-base text-gray-600 dark:text-gray-400">채팅방 나가기</Text>
                 </TouchableOpacity>
               </View>
             </SafeAreaView>
@@ -461,43 +451,52 @@ export default function ChatDetailScreen() {
 
       {/* Invite Modal */}
       <Modal visible={showInviteModal} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
-            <View style={styles.modalHeader}>
-              <ThemedText style={styles.modalTitle}>친구 초대</ThemedText>
+        <View className="flex-1 bg-black/50 justify-end">
+          <View className="bg-white dark:bg-gray-900 rounded-t-3xl max-h-[80%] p-5">
+            <View className="flex-row justify-between items-center mb-5">
+              <Text className="text-xl font-bold text-gray-900 dark:text-white">친구 초대</Text>
               <TouchableOpacity onPress={() => setShowInviteModal(false)}>
-                <IconSymbol name="xmark" size={24} color={colors.gray[600]} />
+                <MaterialIcons name="close" size={24} className="text-gray-500" />
               </TouchableOpacity>
             </View>
 
             <FlatList
               data={friends}
               keyExtractor={(item) => item.friend.id}
-              style={styles.friendsList}
+              className="mb-5"
               renderItem={({ item }) => (
-                <TouchableOpacity style={[styles.friendItem, selectedFriends.includes(item.friend.id) && styles.selectedFriendItem]} onPress={() => toggleFriendSelection(item.friend.id)}>
-                  <View style={styles.memberAvatar}>
-                    <ThemedText style={styles.avatarInitial}>{item.friend.name[0]}</ThemedText>
+                <TouchableOpacity
+                  className={`flex-row items-center p-3 rounded-xl mb-2 ${selectedFriends.includes(item.friend.id) ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}
+                  onPress={() => toggleFriendSelection(item.friend.id)}
+                >
+                  <View className="w-9 h-9 rounded-full bg-blue-50 dark:bg-blue-900/30 justify-center items-center mr-3">
+                    <Text className="text-base font-bold text-blue-600 dark:text-blue-400">{item.friend.name[0]}</Text>
                   </View>
-                  <ThemedText style={styles.memberName}>{item.friend.name}</ThemedText>
-                  <View style={[styles.checkbox, selectedFriends.includes(item.friend.id) && styles.checkboxSelected]}>
-                    {selectedFriends.includes(item.friend.id) && <IconSymbol name="checkmark" size={14} color="#fff" />}
+                  <Text className="flex-1 text-base text-gray-900 dark:text-white">{item.friend.name}</Text>
+                  <View
+                    className={`w-6 h-6 rounded-full border-2 justify-center items-center ${selectedFriends.includes(item.friend.id) ? 'bg-blue-600 border-blue-600 dark:bg-blue-500 dark:border-blue-500' : 'border-gray-300 dark:border-gray-700'}`}
+                  >
+                    {selectedFriends.includes(item.friend.id) && <MaterialIcons name="check" size={14} className="text-white" />}
                   </View>
                 </TouchableOpacity>
               )}
               ListEmptyComponent={
-                <View style={styles.emptyState}>
-                  <ThemedText style={styles.emptySubtext}>초대할 수 있는 친구가 없습니다.</ThemedText>
+                <View className="items-center py-12">
+                  <Text className="text-sm opacity-60 text-gray-500 dark:text-gray-400">초대할 수 있는 친구가 없습니다.</Text>
                 </View>
               }
             />
 
-            <View style={styles.modalFooter}>
-              <TouchableOpacity style={styles.cancelButton} onPress={() => setShowInviteModal(false)}>
-                <ThemedText style={styles.cancelButtonText}>취소</ThemedText>
+            <View className="flex-row gap-4">
+              <TouchableOpacity className="flex-1 h-12 rounded-xl justify-center items-center bg-gray-100 dark:bg-gray-800" onPress={() => setShowInviteModal(false)}>
+                <Text className="text-base text-gray-600 dark:text-gray-300 font-semibold">취소</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.confirmButton, selectedFriends.length === 0 && styles.confirmButtonDisabled]} onPress={handleInvite} disabled={selectedFriends.length === 0}>
-                <ThemedText style={styles.confirmButtonText}>초대하기 ({selectedFriends.length})</ThemedText>
+              <TouchableOpacity
+                className={`flex-[2] h-12 rounded-xl justify-center items-center bg-blue-600 dark:bg-blue-500 ${selectedFriends.length === 0 ? 'opacity-50' : ''}`}
+                onPress={handleInvite}
+                disabled={selectedFriends.length === 0}
+              >
+                <Text className="text-white text-base font-bold">초대하기 ({selectedFriends.length})</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -506,393 +505,3 @@ export default function ChatDetailScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background.primary,
-  },
-  flex1: {
-    flex: 1,
-  },
-  headerButton: {
-    padding: spacing.sm,
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  statusIndicator: {
-    backgroundColor: colors.gray[100],
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 4,
-    borderRadius: borderRadius.full,
-  },
-  statusText: {
-    fontSize: 10,
-    color: colors.gray[500],
-    fontWeight: fontWeight.bold,
-  },
-  messagesList: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.lg,
-  },
-  messageContainer: {
-    marginBottom: spacing.md,
-    maxWidth: '75%',
-  },
-  myMessageContainer: {
-    alignSelf: 'flex-end',
-    alignItems: 'flex-end',
-  },
-  otherMessageContainer: {
-    alignSelf: 'flex-start',
-    alignItems: 'flex-start',
-  },
-  senderName: {
-    fontSize: fontSize.xs,
-    opacity: 0.7,
-    marginBottom: spacing.xs,
-    marginLeft: spacing.xs,
-  },
-  messageBubble: {
-    borderRadius: 18,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    ...shadows.sm,
-  },
-  myMessageBubble: {
-    backgroundColor: colors.primary[600],
-    borderTopRightRadius: 2,
-  },
-  otherMessageBubble: {
-    backgroundColor: colors.gray[100],
-    borderTopLeftRadius: 2,
-  },
-  messageText: {
-    fontSize: fontSize.base,
-    lineHeight: 22,
-  },
-  myMessageText: {
-    color: '#fff',
-  },
-  otherMessageText: {
-    color: colors.gray[900],
-  },
-  messageTime: {
-    fontSize: 10,
-    opacity: 0.5,
-    marginTop: 4,
-  },
-  notificationContainer: {
-    alignSelf: 'center',
-    backgroundColor: colors.gray[100],
-    paddingHorizontal: spacing.md,
-    paddingVertical: 4,
-    borderRadius: borderRadius.full,
-    marginVertical: spacing.md,
-  },
-  notificationText: {
-    fontSize: fontSize.xs,
-    color: colors.gray[600],
-    fontWeight: fontWeight.medium,
-  },
-  myMessageTime: {
-    textAlign: 'right',
-  },
-  otherMessageTime: {
-    textAlign: 'left',
-    marginLeft: spacing.xs,
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: colors.gray[100],
-    backgroundColor: colors.background.primary,
-    alignItems: 'flex-end',
-  },
-  input: {
-    flex: 1,
-    minHeight: 40,
-    maxHeight: 120,
-    backgroundColor: colors.gray[100],
-    borderRadius: borderRadius.xl,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    fontSize: fontSize.base,
-    color: colors.gray[900],
-  },
-  sendButton: {
-    width: 40,
-    height: 40,
-    borderRadius: borderRadius.full,
-    backgroundColor: colors.primary[600],
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: spacing.sm,
-  },
-  sendButtonDisabled: {
-    backgroundColor: colors.gray[100],
-  },
-  emptyContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 100,
-  },
-  emptyText: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.bold,
-    marginBottom: spacing.xs,
-  },
-  emptySubtext: {
-    fontSize: fontSize.sm,
-    opacity: 0.6,
-  },
-
-  // Drawer Styles
-  drawerOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-  },
-  drawerContent: {
-    width: SCREEN_WIDTH * 0.8,
-    backgroundColor: colors.background.primary,
-    height: '100%',
-    ...shadows.lg,
-  },
-  drawerHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: spacing.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray[100],
-  },
-  drawerTitle: {
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
-  },
-  drawerSection: {
-    padding: spacing.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray[100],
-  },
-  drawerItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: spacing.md,
-  },
-  drawerItemLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  drawerItemText: {
-    fontSize: fontSize.base,
-    color: colors.gray[700],
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-  },
-  sectionTitle: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.bold,
-    color: colors.gray[900],
-  },
-  inviteButton: {
-    padding: spacing.xs,
-  },
-  memberItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: spacing.sm,
-  },
-  memberInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  memberAvatar: {
-    width: 36,
-    height: 36,
-    borderRadius: borderRadius.full,
-    backgroundColor: colors.primary[50],
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarInitial: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.bold,
-    color: colors.primary[600],
-  },
-  memberName: {
-    fontSize: fontSize.base,
-    color: colors.gray[900],
-  },
-  creatorBadge: {
-    backgroundColor: colors.warning,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  creatorBadgeText: {
-    fontSize: 10,
-    fontWeight: fontWeight.bold,
-    color: '#fff',
-  },
-  meLabel: {
-    fontSize: fontSize.xs,
-    color: colors.gray[400],
-  },
-  kickButton: {
-    padding: spacing.xs,
-  },
-  drawerFooter: {
-    padding: spacing.lg,
-    paddingBottom: Platform.OS === 'ios' ? spacing.xl : spacing.lg,
-  },
-  leaveButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    padding: spacing.md,
-  },
-  leaveButtonText: {
-    fontSize: fontSize.base,
-    color: colors.gray[600],
-  },
-
-  // Modal Styles
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'flex-end',
-  },
-  modalCard: {
-    backgroundColor: colors.background.primary,
-    borderTopLeftRadius: borderRadius['3xl'],
-    borderTopRightRadius: borderRadius['3xl'],
-    maxHeight: '80%',
-    padding: spacing.lg,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.lg,
-  },
-  modalTitle: {
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
-  },
-  friendsList: {
-    marginBottom: spacing.lg,
-  },
-  friendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: spacing.md,
-    gap: spacing.md,
-    borderRadius: borderRadius.xl,
-  },
-  selectedFriendItem: {
-    backgroundColor: colors.primary[50],
-  },
-  checkbox: {
-    marginLeft: 'auto',
-    width: 24,
-    height: 24,
-    borderRadius: borderRadius.md,
-    borderWidth: 2,
-    borderColor: colors.gray[300],
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  checkboxSelected: {
-    backgroundColor: colors.primary[600],
-    borderColor: colors.primary[600],
-  },
-  modalFooter: {
-    flexDirection: 'row',
-    gap: spacing.md,
-  },
-  cancelButton: {
-    flex: 1,
-    height: 52,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.gray[100],
-    borderRadius: borderRadius.xl,
-  },
-  cancelButtonText: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.bold,
-    color: colors.gray[600],
-  },
-  confirmButton: {
-    flex: 2,
-    height: 52,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.primary[600],
-    borderRadius: borderRadius.xl,
-  },
-  confirmButtonDisabled: {
-    opacity: 0.5,
-  },
-  confirmButtonText: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.bold,
-    color: '#fff',
-  },
-  emptyState: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: spacing.xl,
-    paddingHorizontal: spacing.md,
-  },
-  errorState: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: spacing.xl,
-    backgroundColor: colors.background.primary,
-  },
-  errorTitle: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.bold,
-    marginTop: spacing.lg,
-    color: colors.gray[900],
-  },
-  errorDescription: {
-    fontSize: fontSize.base,
-    color: colors.gray[500],
-    textAlign: 'center',
-    marginTop: spacing.sm,
-    marginBottom: spacing.xl,
-    lineHeight: 22,
-  },
-  retryButton: {
-    backgroundColor: colors.primary[600],
-    paddingHorizontal: spacing.xl,
-    paddingVertical: spacing.md,
-    borderRadius: borderRadius.full,
-    ...shadows.md,
-  },
-  retryButtonText: {
-    color: '#fff',
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.bold,
-  },
-});

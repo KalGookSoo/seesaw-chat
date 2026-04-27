@@ -1,8 +1,7 @@
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { colors, fontSize, fontWeight, borderRadius } from '@/constants/design';
-import { IconSymbol } from '@/components/ui/icon-symbol';
 import type { FriendResponse } from '@/services/mock-data';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { Text, TouchableOpacity, View } from 'react-native';
 
 interface PendingRequestItemProps {
   item: FriendResponse;
@@ -18,112 +17,44 @@ export const PendingRequestItem: React.FC<PendingRequestItemProps> = ({ item, my
 
   return (
     <TouchableOpacity
-      style={[styles.pendingCard, isSentByMe && styles.sentCard]}
+      className={`flex-row items-center p-4 rounded-xl mb-3 border ${
+        isSentByMe ? 'bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700' : 'bg-white border-blue-200 dark:bg-gray-900 dark:border-blue-900/50'
+      }`}
       onPress={() => onShowDetail(item.friend.id)}
       activeOpacity={0.7}
     >
-      <View style={styles.avatar}>
-        <Text style={styles.avatarText}>{item.friend.name[0]}</Text>
+      <View className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-800/50 justify-center items-center mr-4">
+        <Text className="text-lg font-bold text-blue-600 dark:text-blue-400">{item.friend.name[0]}</Text>
       </View>
-      <View style={styles.friendInfo}>
-        <Text style={styles.friendName}>{item.friend.name}</Text>
-        <Text style={styles.friendUsername}>@{item.friend.username}</Text>
-        <Text style={styles.statusLabel}>{isSentByMe ? '보낸 요청' : '받은 요청'}</Text>
+      <View className="flex-1">
+        <Text className="text-base font-semibold text-gray-900 dark:text-white mb-1">{item.friend.name}</Text>
+        <Text className="text-sm text-gray-500 dark:text-gray-400 mb-1">@{item.friend.username}</Text>
+        <Text className="text-xs font-medium text-blue-600 dark:text-blue-400">{isSentByMe ? '보낸 요청' : '받은 요청'}</Text>
       </View>
-      <View style={styles.pendingActions}>
+      <View className="flex-row gap-2">
         {isReceivedByMe && (
           <TouchableOpacity
-            style={styles.acceptButton}
+            className="w-9 h-9 rounded-full bg-blue-600 dark:bg-blue-500 justify-center items-center"
             onPress={(e) => {
               e.stopPropagation();
               onAccept(item);
             }}
             activeOpacity={0.8}
           >
-            <IconSymbol name="checkmark" size={16} color="#fff" />
+            <MaterialIcons name="check" size={16} color="#fff" />
           </TouchableOpacity>
         )}
         <TouchableOpacity
-          style={styles.rejectButton}
+          className="w-9 h-9 rounded-full bg-gray-200 dark:bg-gray-700 justify-center items-center"
           onPress={(e) => {
             e.stopPropagation();
             onReject(item);
           }}
           activeOpacity={0.8}
         >
-          <IconSymbol name={isSentByMe ? 'trash' : 'xmark'} size={16} color={colors.gray[600]} />
+          <MaterialIcons name={isSentByMe ? 'delete' : 'close'} size={16} color={isSentByMe ? '#ef4444' : '#6b7280'} />
         </TouchableOpacity>
       </View>
     </TouchableOpacity>
   );
 };
-
-const styles = StyleSheet.create({
-  pendingCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    backgroundColor: '#fff',
-    borderRadius: borderRadius.xl,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: colors.gray[200],
-  },
-  sentCard: {
-    backgroundColor: colors.gray[50],
-    borderColor: colors.gray[200],
-  },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: borderRadius.full,
-    backgroundColor: colors.primary[100],
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  avatarText: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.bold,
-    color: colors.primary[600],
-  },
-  friendInfo: {
-    flex: 1,
-  },
-  friendName: {
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.semibold,
-    color: colors.gray[900],
-    marginBottom: 4,
-  },
-  friendUsername: {
-    fontSize: fontSize.sm,
-    color: colors.gray[500],
-    marginBottom: 4,
-  },
-  statusLabel: {
-    fontSize: fontSize.xs,
-    color: colors.primary[600],
-    fontWeight: fontWeight.medium,
-  },
-  pendingActions: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  acceptButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: colors.primary[600],
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  rejectButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: colors.gray[200],
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});

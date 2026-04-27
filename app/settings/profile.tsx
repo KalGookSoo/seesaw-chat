@@ -1,13 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { borderRadius, colors, fontSize, fontWeight, shadows, spacing } from '@/constants/design';
 import { Alert } from '@/services/alert';
 import { authService, userService } from '@/services/api';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { router } from 'expo-router';
-import { ActivityIndicator, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
-
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
+import { ActivityIndicator, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function ProfileEditScreen() {
   const [userId, setUserId] = useState<string | null>(null);
@@ -59,136 +55,51 @@ export default function ProfileEditScreen() {
 
   if (fetching) {
     return (
-      <ThemedView style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={colors.primary[600]} />
-      </ThemedView>
+      <View className="flex-1 justify-center items-center bg-white dark:bg-gray-950">
+        <ActivityIndicator size="large" color="#2563eb" />
+      </View>
     );
   }
 
   return (
-    <ThemedView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <IconSymbol name="chevron.left" size={24} color={colors.gray[900]} />
+    <View className="flex-1 bg-white dark:bg-gray-950">
+      <View className="flex-row items-center justify-between px-4 pt-16 pb-4 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800">
+        <TouchableOpacity onPress={() => router.back()} className="w-10 h-10 justify-center items-center">
+          <MaterialIcons name="chevron-left" size={24} className="text-gray-900 dark:text-white" />
         </TouchableOpacity>
-        <ThemedText style={styles.headerTitle}>프로필 편집</ThemedText>
-        <View style={{ width: 40 }} />
+        <Text className="text-lg font-bold text-gray-900 dark:text-white">프로필 편집</Text>
+        <View className="w-10" />
       </View>
 
-      <View style={styles.content}>
-        <View style={styles.avatarSection}>
-          <View style={styles.avatar}>
-            <ThemedText style={styles.avatarText}>{name[0] || '?'}</ThemedText>
+      <View className="flex-1 px-6">
+        <View className="items-center my-10">
+          <View className="w-[100px] h-[100px] rounded-full bg-blue-600 dark:bg-blue-500 justify-center items-center mb-4 shadow-md">
+            <Text className="text-white text-4xl font-bold">{name[0] || '?'}</Text>
           </View>
-          <ThemedText style={styles.avatarHint}>프로필 사진 변경 기능은 준비 중입니다</ThemedText>
+          <Text className="text-sm text-gray-500 dark:text-gray-400">프로필 사진 변경 기능은 준비 중입니다</Text>
         </View>
 
-        <View style={styles.form}>
-          <View style={styles.inputGroup}>
-            <ThemedText style={styles.label}>이름</ThemedText>
-            <TextInput style={styles.input} value={name} onChangeText={setName} placeholder="이름을 입력하세요" placeholderTextColor={colors.gray[400]} />
+        <View className="gap-6">
+          <View className="gap-2">
+            <Text className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">이름</Text>
+            <TextInput
+              className="h-14 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl px-4 text-base text-gray-900 dark:text-white"
+              value={name}
+              onChangeText={setName}
+              placeholder="이름을 입력하세요"
+              placeholderTextColor="#9ca3af"
+            />
           </View>
 
-          <TouchableOpacity style={[styles.saveButton, loading && styles.buttonDisabled]} onPress={handleSave} disabled={loading}>
-            <ThemedText style={styles.saveButtonText}>{loading ? '저장 중...' : '저장하기'}</ThemedText>
+          <TouchableOpacity
+            className={`h-14 bg-blue-600 dark:bg-blue-500 rounded-xl justify-center items-center mt-4 shadow-sm ${loading ? 'opacity-70' : ''}`}
+            onPress={handleSave}
+            disabled={loading}
+          >
+            <Text className="text-white text-base font-bold">{loading ? '저장 중...' : '저장하기'}</Text>
           </TouchableOpacity>
         </View>
       </View>
-    </ThemedView>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.md,
-    paddingTop: 60,
-    paddingBottom: spacing.md,
-    backgroundColor: '#fff',
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.bold,
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: spacing.lg,
-  },
-  avatarSection: {
-    alignItems: 'center',
-    marginVertical: spacing.xl,
-  },
-  avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: colors.primary[600],
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-    ...shadows.md,
-  },
-  avatarText: {
-    color: '#fff',
-    fontSize: 40,
-    fontWeight: fontWeight.bold,
-  },
-  avatarHint: {
-    fontSize: fontSize.sm,
-    color: colors.gray[500],
-  },
-  form: {
-    gap: spacing.lg,
-  },
-  inputGroup: {
-    gap: spacing.xs,
-  },
-  label: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
-    color: colors.gray[700],
-    marginLeft: 4,
-  },
-  input: {
-    height: 52,
-    backgroundColor: colors.gray[50],
-    borderRadius: borderRadius.lg,
-    paddingHorizontal: spacing.md,
-    fontSize: fontSize.base,
-    borderWidth: 1,
-    borderColor: colors.gray[200],
-  },
-  saveButton: {
-    height: 56,
-    backgroundColor: colors.primary[600],
-    borderRadius: borderRadius.xl,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: spacing.lg,
-    ...shadows.md,
-  },
-  saveButtonText: {
-    color: '#fff',
-    fontSize: fontSize.base,
-    fontWeight: fontWeight.bold,
-  },
-  buttonDisabled: {
-    opacity: 0.7,
-  },
-});
