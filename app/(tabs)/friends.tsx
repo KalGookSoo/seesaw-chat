@@ -6,13 +6,13 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { router } from 'expo-router';
 import { RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
-import { CreateChatRoomModal } from '@/app/features/friends/components/CreateChatRoomModal';
-import { FriendListItem } from '@/app/features/friends/components/FriendListItem';
-import { FriendTabs } from '@/app/features/friends/components/FriendTabs';
-import { PendingRequestItem } from '@/app/features/friends/components/PendingRequestItem';
-import { SearchUserModal } from '@/app/features/friends/components/SearchUserModal';
-import { RelationshipStatus, UserDetailModal } from '@/app/features/friends/components/UserDetailModal';
-import { useFriends } from '@/app/features/friends/hooks/useFriends';
+import { CreateChatRoomModal } from '@/features/friends/components/CreateChatRoomModal';
+import { FriendListItem } from '@/features/friends/components/FriendListItem';
+import { FriendTabs } from '@/features/friends/components/FriendTabs';
+import { PendingRequestItem } from '@/features/friends/components/PendingRequestItem';
+import { SearchUserModal } from '@/features/friends/components/SearchUserModal';
+import { RelationshipStatus, UserDetailModal } from '@/features/friends/components/UserDetailModal';
+import { useFriends } from '@/features/friends/hooks/useFriends';
 
 export default function FriendsScreen() {
   const [activeTab, setActiveTab] = useState<'ACCEPTED' | 'PENDING' | 'BLOCKED'>('ACCEPTED');
