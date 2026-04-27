@@ -254,6 +254,9 @@ export default function FriendsScreen() {
           <Text style={styles.headerSubtitle}>{friends.length}명의 친구</Text>
         </View>
         <View style={styles.headerActions}>
+          <TouchableOpacity style={styles.actionButton} onPress={handleRefresh}>
+            <IconSymbol name="arrow.clockwise" size={20} color={colors.primary[600]} />
+          </TouchableOpacity>
           <TouchableOpacity
             style={[styles.actionButton, isCreateChatMode && styles.activeActionButton]}
             onPress={() => {

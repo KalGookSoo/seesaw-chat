@@ -33,6 +33,12 @@ const MAPPING = {
   'checkmark': 'check',
   'plus': 'add',
   'magnifyingglass': 'search',
+  'arrow.clockwise': 'refresh',
+  'trash': 'delete',
+  'calendar': 'calendar-today',
+  'phone': 'phone',
+  'shield': 'shield',
+  'message': 'chat-bubble-outline',
 
   // Settings
   'gearshape.fill': 'settings',
