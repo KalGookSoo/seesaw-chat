@@ -17,7 +17,7 @@ export default function FriendsScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<UserResponse[]>([]);
+  const [searchResults, setSearchResults] = useState<UserResponse[] | null>(null);
   const [selectedUser, setSelectedUser] = useState<UserResponse | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [isCreateChatMode, setIsCreateChatMode] = useState(false);
@@ -105,7 +105,7 @@ export default function FriendsScreen() {
       setShowSearchModal(false);
       setShowDetailModal(false);
       setSearchQuery('');
-      setSearchResults([]);
+      setSearchResults(null);
       await loadData();
     } catch (error: any) {
       Alert.handleApiError(error, '친구 요청 실패');
@@ -375,7 +375,14 @@ export default function FriendsScreen() {
         <View style={styles.modalContainer}>
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>친구 찾기</Text>
-            <TouchableOpacity onPress={() => setShowSearchModal(false)} style={styles.closeButton}>
+            <TouchableOpacity
+              onPress={() => {
+                setShowSearchModal(false);
+                setSearchResults(null);
+                setSearchQuery('');
+              }}
+              style={styles.closeButton}
+            >
               <IconSymbol name="xmark" size={24} color={colors.gray[600]} />
             </TouchableOpacity>
           </View>
@@ -385,10 +392,13 @@ export default function FriendsScreen() {
               <IconSymbol name="magnifyingglass" size={20} color={colors.gray[400]} />
               <TextInput
                 style={styles.searchInput}
-                placeholder="아이디 또는 이름으로 검색"
+                placeholder="아이디/이름 검색 (영문 대소문자 구분)"
                 placeholderTextColor={colors.gray[400]}
                 value={searchQuery}
-                onChangeText={setSearchQuery}
+                onChangeText={(text) => {
+                  setSearchQuery(text);
+                  if (searchResults !== null) setSearchResults(null);
+                }}
                 onSubmitEditing={handleSearch}
                 autoCapitalize="none"
               />
@@ -399,19 +409,25 @@ export default function FriendsScreen() {
           </View>
 
           <FlatList
-            data={searchResults}
+            data={searchResults || []}
             renderItem={renderSearchResult}
             keyExtractor={(item) => item.id}
             style={styles.searchResults}
             contentContainerStyle={styles.searchResultsContent}
             ListEmptyComponent={
-              searchQuery ? (
+              searchResults !== null ? (
                 <View style={styles.emptyState}>
                   <Text style={styles.emptyIcon}>🔍</Text>
                   <Text style={styles.emptyTitle}>검색 결과가 없습니다</Text>
-                  <Text style={styles.emptySubtitle}>다른 키워드로 검색해보세요</Text>
+                  <Text style={styles.emptySubtitle}>정확한 아이디나 이름을 입력했는지 확인해보세요</Text>
                 </View>
-              ) : null
+              ) : (
+                <View style={styles.emptyState}>
+                  <Text style={styles.emptyIcon}>👋</Text>
+                  <Text style={styles.emptyTitle}>친구를 찾아보세요</Text>
+                  <Text style={styles.emptySubtitle}>아이디 또는 이름으로 검색할 수 있습니다</Text>
+                </View>
+              )
             }
           />
         </View>
