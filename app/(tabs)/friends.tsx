@@ -7,6 +7,9 @@ import { router } from 'expo-router';
 import { FlatList, Modal, RefreshControl, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { UserDetailModal, RelationshipStatus } from '@/components/friends/UserDetailModal';
+import { SearchUserModal } from '@/components/friends/SearchUserModal';
+import { CreateChatRoomModal } from '@/components/friends/CreateChatRoomModal';
 
 export default function FriendsScreen() {
   const [activeTab, setActiveTab] = useState<'ACCEPTED' | 'PENDING' | 'BLOCKED'>('ACCEPTED');
@@ -24,6 +27,7 @@ export default function FriendsScreen() {
   const [selectedFriends, setSelectedFriends] = useState<string[]>([]);
   const [newChatRoomName, setNewChatRoomName] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [returnToSearch, setReturnToSearch] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -112,14 +116,42 @@ export default function FriendsScreen() {
     }
   };
 
-  const handleShowDetail = async (userId: string) => {
+  const handleShowDetail = async (userId: string, fromSearch = false) => {
     try {
       const userDetail = await friendService.getUserDetail(userId);
       setSelectedUser(userDetail);
-      setShowDetailModal(true);
+      
+      if (fromSearch) {
+        setShowSearchModal(false);
+        setReturnToSearch(true);
+        setTimeout(() => setShowDetailModal(true), 300);
+      } else {
+        setShowDetailModal(true);
+      }
     } catch (error: any) {
       Alert.handleApiError(error, '사용자 정보 로드 실패');
     }
+  };
+
+  const handleCloseDetail = () => {
+    setShowDetailModal(false);
+    if (returnToSearch) {
+      setTimeout(() => setShowSearchModal(true), 300);
+      setReturnToSearch(false);
+    } else {
+      setTimeout(() => setSelectedUser(null), 300);
+    }
+  };
+
+  const getRelationship = (userId: string): RelationshipStatus => {
+    if (myUserId === userId) return 'NONE';
+    if (friends.some((f) => f.friend.id === userId)) return 'FRIEND';
+    if (blockedFriends.some((f) => f.friend.id === userId)) return 'BLOCKED';
+    const pending = pendingRequests.find((f) => f.friend.id === userId);
+    if (pending) {
+      return pending.userId === myUserId ? 'RECEIVED_REQUEST' : 'SENT_REQUEST';
+    }
+    return 'NONE';
   };
 
   const toggleFriendSelection = (friendId: string) => {
@@ -185,7 +217,7 @@ export default function FriendsScreen() {
   );
 
   const renderPendingItem = ({ item }: { item: FriendResponse }) => {
-    const isSentByMe = item.userId === myUserId;
+    const isSentByMe = item.userId !== myUserId;
 
     return (
       <TouchableOpacity style={[styles.pendingCard, isSentByMe && styles.sentCard]} onPress={() => handleShowDetail(item.friend.id)} activeOpacity={0.7}>
@@ -224,27 +256,6 @@ export default function FriendsScreen() {
       </TouchableOpacity>
     );
   };
-
-  const renderSearchResult = ({ item }: { item: UserResponse }) => (
-    <TouchableOpacity style={styles.searchResultCard} onPress={() => handleShowDetail(item.id)} activeOpacity={0.7}>
-      <View style={styles.avatar}>
-        <Text style={styles.avatarText}>{item.name[0]}</Text>
-      </View>
-      <View style={styles.friendInfo}>
-        <Text style={styles.friendName}>{item.name}</Text>
-        <Text style={styles.friendUsername}>@{item.username}</Text>
-      </View>
-      <TouchableOpacity
-        style={styles.addButton}
-        onPress={(e) => {
-          e.stopPropagation();
-          handleSendRequest(item);
-        }}
-      >
-        <IconSymbol name="plus" size={20} color={colors.primary[600]} />
-      </TouchableOpacity>
-    </TouchableOpacity>
-  );
 
   return (
     <View style={styles.container}>
@@ -371,134 +382,56 @@ export default function FriendsScreen() {
       </ScrollView>
 
       {/* Search Modal */}
-      <Modal visible={showSearchModal} animationType="slide" presentationStyle="pageSheet">
-        <View style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>친구 찾기</Text>
-            <TouchableOpacity
-              onPress={() => {
-                setShowSearchModal(false);
-                setSearchResults(null);
-                setSearchQuery('');
-              }}
-              style={styles.closeButton}
-            >
-              <IconSymbol name="xmark" size={24} color={colors.gray[600]} />
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.searchContainer}>
-            <View style={styles.searchInputWrapper}>
-              <IconSymbol name="magnifyingglass" size={20} color={colors.gray[400]} />
-              <TextInput
-                style={styles.searchInput}
-                placeholder="아이디/이름 검색 (영문 대소문자 구분)"
-                placeholderTextColor={colors.gray[400]}
-                value={searchQuery}
-                onChangeText={(text) => {
-                  setSearchQuery(text);
-                  if (searchResults !== null) setSearchResults(null);
-                }}
-                onSubmitEditing={handleSearch}
-                autoCapitalize="none"
-              />
-            </View>
-            <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
-              <Text style={styles.searchButtonText}>검색</Text>
-            </TouchableOpacity>
-          </View>
-
-          <FlatList
-            data={searchResults || []}
-            renderItem={renderSearchResult}
-            keyExtractor={(item) => item.id}
-            style={styles.searchResults}
-            contentContainerStyle={styles.searchResultsContent}
-            ListEmptyComponent={
-              searchResults !== null ? (
-                <View style={styles.emptyState}>
-                  <Text style={styles.emptyIcon}>🔍</Text>
-                  <Text style={styles.emptyTitle}>검색 결과가 없습니다</Text>
-                  <Text style={styles.emptySubtitle}>정확한 아이디나 이름을 입력했는지 확인해보세요</Text>
-                </View>
-              ) : (
-                <View style={styles.emptyState}>
-                  <Text style={styles.emptyIcon}>👋</Text>
-                  <Text style={styles.emptyTitle}>친구를 찾아보세요</Text>
-                  <Text style={styles.emptySubtitle}>아이디 또는 이름으로 검색할 수 있습니다</Text>
-                </View>
-              )
-            }
-          />
-        </View>
-      </Modal>
+      <SearchUserModal
+        visible={showSearchModal}
+        onClose={() => {
+          setShowSearchModal(false);
+          setSearchResults(null);
+          setSearchQuery('');
+        }}
+        searchQuery={searchQuery}
+        onSearchQueryChange={setSearchQuery}
+        onSearch={handleSearch}
+        searchResults={searchResults}
+        onUserSelect={(id) => handleShowDetail(id, true)}
+        onSendRequest={handleSendRequest}
+      />
 
       {/* User Detail Modal */}
-      <Modal visible={showDetailModal} transparent animationType="fade">
-        <View style={styles.overlay}>
-          <View style={styles.detailCard}>
-            <TouchableOpacity style={styles.detailCloseButton} onPress={() => setShowDetailModal(false)}>
-              <IconSymbol name="xmark" size={20} color={colors.gray[400]} />
-            </TouchableOpacity>
-
-            {selectedUser && (
-              <View style={styles.detailContent}>
-                <View style={styles.detailAvatar}>
-                  <Text style={styles.detailAvatarText}>{selectedUser.name[0]}</Text>
-                </View>
-                <Text style={styles.detailName}>{selectedUser.name}</Text>
-                <Text style={styles.detailUsername}>@{selectedUser.username}</Text>
-
-                <View style={styles.detailInfoList}>
-                  {selectedUser.contactNumber && (
-                    <View style={styles.infoItem}>
-                      <IconSymbol name="phone" size={16} color={colors.gray[400]} />
-                      <Text style={styles.infoText}>{selectedUser.contactNumber}</Text>
-                    </View>
-                  )}
-                  {selectedUser.registeredAt && (
-                    <View style={styles.infoItem}>
-                      <IconSymbol name="calendar" size={16} color={colors.gray[400]} />
-                      <Text style={styles.infoText}>가입일: {new Date(selectedUser.registeredAt).toLocaleDateString()}</Text>
-                    </View>
-                  )}
-                  {selectedUser.roles && selectedUser.roles.length > 0 && (
-                    <View style={styles.infoItem}>
-                      <IconSymbol name="shield" size={16} color={colors.gray[400]} />
-                      <Text style={styles.infoText}>권한: {selectedUser.roles.join(', ')}</Text>
-                    </View>
-                  )}
-                </View>
-
-                <TouchableOpacity style={styles.detailAddButton} onPress={() => handleSendRequest(selectedUser)}>
-                  <Text style={styles.detailAddButtonText}>친구 추가 요청</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-          </View>
-        </View>
-      </Modal>
+      <UserDetailModal
+        visible={showDetailModal}
+        onClose={handleCloseDetail}
+        user={selectedUser}
+        relationship={selectedUser ? getRelationship(selectedUser.id) : 'NONE'}
+        onSendRequest={handleSendRequest}
+        onAcceptRequest={async (id) => {
+          const item = pendingRequests.find((r) => r.friend.id === id);
+          if (item) await handleAcceptRequest(item);
+          handleCloseDetail();
+        }}
+        onRejectRequest={async (id) => {
+          const item = pendingRequests.find((r) => r.friend.id === id);
+          if (item) await handleRejectRequest(item);
+          handleCloseDetail();
+        }}
+        onRemoveFriend={(id, name) => {
+          const item = friends.find((f) => f.friend.id === id);
+          if (item) {
+            handleRemoveFriend(item);
+            handleCloseDetail();
+          }
+        }}
+      />
 
       {/* Create Chat Room Modal */}
-      <Modal visible={showCreateModal} transparent animationType="slide">
-        <View style={styles.overlay}>
-          <View style={styles.createRoomCard}>
-            <Text style={styles.modalTitle}>새 채팅방 생성</Text>
-            <Text style={styles.modalSubtitle}>{selectedFriends.length}명의 친구 초대됨</Text>
-
-            <TextInput style={styles.roomNameInput} placeholder="채팅방 이름을 입력하세요" value={newChatRoomName} onChangeText={setNewChatRoomName} autoFocus />
-
-            <View style={styles.modalActions}>
-              <TouchableOpacity style={styles.cancelButton} onPress={() => setShowCreateModal(false)}>
-                <Text style={styles.cancelButtonText}>취소</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.confirmButton} onPress={handleCreateChatRoom}>
-                <Text style={styles.confirmButtonText}>생성하기</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
+      <CreateChatRoomModal
+        visible={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        selectedFriendsCount={selectedFriends.length}
+        newChatRoomName={newChatRoomName}
+        onNameChange={setNewChatRoomName}
+        onCreate={handleCreateChatRoom}
+      />
     </View>
   );
 }
