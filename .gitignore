@@ -52,3 +52,5 @@ app-example
 .aiassistant/
 
 /.env.*
+
+/issues/
