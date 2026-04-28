@@ -17,6 +17,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function FriendsScreen() {
   const { colorScheme } = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  const iconButtonBgColor = isDark ? '#2C2C2E' : '#F2F2F7';
+  const iconButtonBorderColor = isDark ? '#48484A' : '#C6C6C8';
+  const iconButtonColor = isDark ? '#F3F4F6' : '#374151';
   const [activeTab, setActiveTab] = useState<'ACCEPTED' | 'PENDING' | 'BLOCKED'>('ACCEPTED');
 
   // Custom Hook for State & Logic
@@ -167,22 +171,29 @@ export default function FriendsScreen() {
             <Text className="text-sm text-muted-foreground mt-1">{friends.length}명의 친구</Text>
           </View>
           <View className="flex-row gap-2">
-            <TouchableOpacity className="w-11 h-11 rounded-xl bg-secondary border border-border justify-center items-center active:opacity-80" onPress={handleRefresh}>
-              <MaterialIcons name="refresh" size={20} className="text-foreground" />
+            <TouchableOpacity
+              className="w-11 h-11 rounded-xl justify-center items-center active:opacity-80"
+              style={{ backgroundColor: iconButtonBgColor, borderColor: iconButtonBorderColor, borderWidth: 1 }}
+              onPress={handleRefresh}
+            >
+              <MaterialIcons name="refresh" size={20} color={iconButtonColor} />
             </TouchableOpacity>
             <TouchableOpacity
-              className={`w-11 h-11 rounded-xl border justify-center items-center active:opacity-80 ${
-                isCreateChatMode ? 'bg-primary-500 border-primary-500' : 'bg-secondary border-border'
-              }`}
+              className={`w-11 h-11 rounded-xl justify-center items-center active:opacity-80 ${isCreateChatMode ? 'bg-primary-500 border-primary-500' : ''}`}
+              style={isCreateChatMode ? undefined : { backgroundColor: iconButtonBgColor, borderColor: iconButtonBorderColor, borderWidth: 1 }}
               onPress={() => {
                 setIsCreateChatMode(!isCreateChatMode);
                 setSelectedFriends([]);
               }}
             >
-              <MaterialIcons name={isCreateChatMode ? 'close' : 'chat'} size={20} className={isCreateChatMode ? 'text-white' : 'text-foreground'} />
+              <MaterialIcons name={isCreateChatMode ? 'close' : 'chat'} size={20} color={isCreateChatMode ? '#FFFFFF' : iconButtonColor} />
             </TouchableOpacity>
-            <TouchableOpacity className="w-11 h-11 rounded-xl bg-secondary border border-border justify-center items-center active:opacity-80" onPress={() => setShowSearchModal(true)}>
-              <MaterialIcons name="person-add" size={22} className="text-foreground" />
+            <TouchableOpacity
+              className="w-11 h-11 rounded-xl justify-center items-center active:opacity-80"
+              style={{ backgroundColor: iconButtonBgColor, borderColor: iconButtonBorderColor, borderWidth: 1 }}
+              onPress={() => setShowSearchModal(true)}
+            >
+              <MaterialIcons name="person-add" size={22} color={iconButtonColor} />
             </TouchableOpacity>
           </View>
         </View>
