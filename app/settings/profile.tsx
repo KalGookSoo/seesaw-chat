@@ -55,48 +55,48 @@ export default function ProfileEditScreen() {
 
   if (fetching) {
     return (
-      <View className="flex-1 justify-center items-center bg-white dark:bg-gray-950">
-        <ActivityIndicator size="large" color="#2563eb" />
+      <View className="flex-1 justify-center items-center bg-background">
+        <ActivityIndicator size="large" color="#6366f1" />
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-slate-50 dark:bg-slate-950">
-      <View className="flex-row items-center justify-between px-4 pt-16 pb-4 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
+    <View className="flex-1 bg-background">
+      <View className="flex-row items-center justify-between px-4 pt-16 pb-4 bg-secondary border-b border-border">
         <TouchableOpacity onPress={() => router.back()} className="w-10 h-10 justify-center items-center">
-          <MaterialIcons name="chevron-left" size={24} className="text-slate-900 dark:text-white" />
+          <MaterialIcons name="chevron-left" size={24} className="text-foreground" />
         </TouchableOpacity>
-        <Text className="text-lg font-bold text-slate-900 dark:text-white">프로필 편집</Text>
+        <Text className="text-xl font-medium text-foreground">프로필 편집</Text>
         <View className="w-10" />
       </View>
 
-      <View className="flex-1 px-6">
+      <View className="flex-1 px-4">
         <View className="items-center my-10">
-          <View className="w-[100px] h-[100px] rounded-full bg-primary-600 dark:bg-primary-500 justify-center items-center mb-4 shadow-md">
+          <View className="w-[100px] h-[100px] rounded-full bg-primary-500 justify-center items-center mb-4 shadow-md">
             <Text className="text-white text-4xl font-bold">{name[0] || '?'}</Text>
           </View>
-          <Text className="text-sm text-slate-500 dark:text-slate-400">프로필 사진 변경 기능은 준비 중입니다</Text>
+          <Text className="text-sm text-muted-foreground">프로필 사진 변경 기능은 준비 중입니다</Text>
         </View>
 
-        <View className="gap-6">
+        <View className="gap-4">
           <View className="gap-2">
-            <Text className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">이름</Text>
+            <Text className="text-sm font-medium text-secondary-foreground ml-1">이름</Text>
             <TextInput
-              className="h-14 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 text-base text-slate-900 dark:text-white"
+              className="bg-secondary border border-border rounded-xl p-4 text-foreground text-base"
               value={name}
               onChangeText={setName}
               placeholder="이름을 입력하세요"
-              placeholderTextColor="#9ca3af"
+              placeholderTextColor="#8E8E93"
             />
           </View>
 
           <TouchableOpacity
-            className={`h-14 bg-primary-600 dark:bg-primary-500 rounded-xl justify-center items-center mt-4 shadow-sm ${loading ? 'opacity-70' : ''}`}
+            className={`bg-primary-500 rounded-xl p-4 items-center mt-4 ${loading ? 'opacity-70' : ''}`}
             onPress={handleSave}
             disabled={loading}
           >
-            <Text className="text-white text-base font-bold">{loading ? '저장 중...' : '저장하기'}</Text>
+            <Text className="text-white font-semibold text-base">{loading ? '저장 중...' : '저장하기'}</Text>
           </TouchableOpacity>
         </View>
       </View>

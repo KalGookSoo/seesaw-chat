@@ -13,19 +13,19 @@ export function ThemedText({ className, type = 'default', ...rest }: ThemedTextP
 
   switch (type) {
     case 'default':
-      typeClasses = 'text-base leading-6 text-gray-900 dark:text-white';
+      typeClasses = 'text-base leading-6 text-foreground';
       break;
     case 'title':
-      typeClasses = 'text-3xl font-bold leading-8 text-gray-900 dark:text-white';
+      typeClasses = 'text-3xl font-bold leading-8 text-foreground';
       break;
     case 'defaultSemiBold':
-      typeClasses = 'text-base font-semibold leading-6 text-gray-900 dark:text-white';
+      typeClasses = 'text-base font-semibold leading-6 text-foreground';
       break;
     case 'subtitle':
-      typeClasses = 'text-xl font-bold text-gray-900 dark:text-white';
+      typeClasses = 'text-xl font-medium text-foreground';
       break;
     case 'link':
-      typeClasses = 'text-base leading-7 text-blue-600 dark:text-blue-400';
+      typeClasses = 'text-base leading-7 text-primary-500';
       break;
   }
 

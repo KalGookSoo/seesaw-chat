@@ -1,18 +1,40 @@
 import React from 'react';
-import { Colors } from '@/constants/theme';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Tabs } from 'expo-router';
+import { useColorScheme } from 'nativewind';
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { HapticTab } from '@/components/haptic-tab';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  const { colorScheme } = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  const tabActiveColor = isDark ? '#F3F4F6' : '#374151';
+  const tabInactiveColor = isDark ? '#6B7280' : '#9CA3AF';
+  const bgColor = isDark ? '#1C1C1E' : '#F2F2F7';
+  const borderColor = isDark ? '#38383A' : '#D1D5DB';
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarActiveTintColor: tabActiveColor,
+        tabBarInactiveTintColor: tabInactiveColor,
+        tabBarStyle: {
+          display: 'flex',
+          backgroundColor: bgColor,
+          borderTopColor: borderColor,
+          borderTopWidth: 1,
+          height: 84,
+          paddingTop: 8,
+          paddingBottom: 24,
+        },
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: '600',
+        },
+        tabBarItemStyle: {
+          borderRadius: 12,
+          marginHorizontal: 6,
+        },
         headerShown: false,
         tabBarButton: HapticTab,
       }}

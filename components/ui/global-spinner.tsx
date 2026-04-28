@@ -13,8 +13,8 @@ export function GlobalSpinner() {
 
   return (
     <View className="absolute inset-0 bg-black/40 justify-center items-center z-[9999]">
-      <View className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-md">
-        <ActivityIndicator size="large" className="text-primary-600" />
+      <View className="bg-secondary p-6 rounded-3xl shadow-md">
+        <ActivityIndicator size="large" className="text-primary-500" />
       </View>
     </View>
   );

@@ -11,13 +11,12 @@ import { chatService, friendService } from '@/services/api';
 import type { UserResponse } from '@/services/mock-data';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { router } from 'expo-router';
+import { useColorScheme } from 'nativewind';
 import { RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
-
 export default function FriendsScreen() {
-  const colorScheme = useColorScheme();
+  const { colorScheme } = useColorScheme();
   const [activeTab, setActiveTab] = useState<'ACCEPTED' | 'PENDING' | 'BLOCKED'>('ACCEPTED');
 
   // Custom Hook for State & Logic
@@ -160,42 +159,44 @@ export default function FriendsScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50 dark:bg-slate-900" edges={['top', 'left', 'right']}>
-      <View className="px-5 pt-16 pb-5 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
+    <SafeAreaView className="flex-1 bg-background" edges={['top', 'left', 'right']}>
+      <View className="px-4 pt-5 pb-5 bg-background border-b border-border">
         <View className="flex-row justify-between items-center">
           <View>
-            <Text className="text-3xl font-bold text-slate-900 dark:text-white">친구</Text>
-            <Text className="text-sm text-slate-500 dark:text-slate-400 mt-1">{friends.length}명의 친구</Text>
+            <Text className="text-3xl font-bold text-foreground">친구</Text>
+            <Text className="text-sm text-muted-foreground mt-1">{friends.length}명의 친구</Text>
           </View>
           <View className="flex-row gap-2">
-            <TouchableOpacity className="w-11 h-11 rounded-xl bg-slate-100 dark:bg-slate-800 justify-center items-center" onPress={handleRefresh}>
-              <MaterialIcons name="refresh" size={20} className="text-slate-900 dark:text-white" />
+            <TouchableOpacity className="w-11 h-11 rounded-xl bg-secondary border border-border justify-center items-center active:opacity-80" onPress={handleRefresh}>
+              <MaterialIcons name="refresh" size={20} className="text-foreground" />
             </TouchableOpacity>
             <TouchableOpacity
-              className={`w-11 h-11 rounded-xl justify-center items-center ${isCreateChatMode ? 'bg-primary-600 dark:bg-primary-500' : 'bg-slate-100 dark:bg-slate-800'}`}
+              className={`w-11 h-11 rounded-xl border justify-center items-center active:opacity-80 ${
+                isCreateChatMode ? 'bg-primary-500 border-primary-500' : 'bg-secondary border-border'
+              }`}
               onPress={() => {
                 setIsCreateChatMode(!isCreateChatMode);
                 setSelectedFriends([]);
               }}
             >
-              <MaterialIcons name={isCreateChatMode ? 'close' : 'chat'} size={20} className={isCreateChatMode ? 'text-white' : 'text-slate-900 dark:text-white'} />
+              <MaterialIcons name={isCreateChatMode ? 'close' : 'chat'} size={20} className={isCreateChatMode ? 'text-white' : 'text-foreground'} />
             </TouchableOpacity>
-            <TouchableOpacity className="w-11 h-11 rounded-xl bg-slate-100 dark:bg-slate-800 justify-center items-center" onPress={() => setShowSearchModal(true)}>
-              <MaterialIcons name="person-add" size={22} className="text-slate-900 dark:text-white" />
+            <TouchableOpacity className="w-11 h-11 rounded-xl bg-secondary border border-border justify-center items-center active:opacity-80" onPress={() => setShowSearchModal(true)}>
+              <MaterialIcons name="person-add" size={22} className="text-foreground" />
             </TouchableOpacity>
           </View>
         </View>
       </View>
 
       {isCreateChatMode && (
-        <View className="flex-row justify-between items-center px-5 py-3 bg-primary-600 dark:bg-primary-700 shadow-sm">
+        <View className="flex-row justify-between items-center px-4 py-3 bg-primary-500">
           <Text className="text-white text-base font-semibold">{selectedFriends.length}명 선택됨</Text>
           <TouchableOpacity
-            className={`bg-white dark:bg-slate-100 px-4 py-1.5 rounded-lg ${selectedFriends.length === 0 ? 'opacity-50' : ''}`}
+            className={`bg-white px-4 py-2 rounded-xl ${selectedFriends.length === 0 ? 'opacity-50' : ''}`}
             disabled={selectedFriends.length === 0}
             onPress={() => setShowCreateModal(true)}
           >
-            <Text className="text-primary-600 dark:text-primary-700 text-sm font-bold">채팅방 생성</Text>
+            <Text className="text-primary-500 text-sm font-bold">채팅방 생성</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -204,17 +205,17 @@ export default function FriendsScreen() {
       <FriendTabs activeTab={activeTab} onChangeTab={setActiveTab} friendsCount={friends.length} pendingCount={pendingRequests.length} />
 
       <ScrollView
-        className="flex-1 px-5"
+        className="flex-1 px-4"
+        contentContainerStyle={{ paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colorScheme === 'dark' ? '#3b82f6' : '#2563eb'} />}
       >
         {activeTab === 'ACCEPTED' && (
-          <View className="mt-5">
+          <View className="mt-4">
             {friends.length === 0 ? (
               <View className="items-center py-12 px-6">
-                <Text className="text-6xl mb-4">👋</Text>
-                <Text className="text-xl font-semibold text-gray-900 dark:text-white mb-2">아직 친구가 없습니다</Text>
-                <Text className="text-base text-gray-500 dark:text-gray-400 text-center">친구를 추가하여 채팅을 시작해보세요!</Text>
+                <Text className="text-xl font-medium text-foreground mb-2">아직 친구가 없습니다</Text>
+                <Text className="text-base text-muted-foreground text-center">친구를 추가하여 채팅을 시작해보세요!</Text>
               </View>
             ) : (
               friends.map((item) => (
@@ -232,18 +233,17 @@ export default function FriendsScreen() {
         )}
 
         {activeTab === 'PENDING' && (
-          <View className="mt-5">
+          <View className="mt-4">
             {pendingRequests.length === 0 ? (
               <View className="items-center py-12 px-6">
-                <Text className="text-6xl mb-4">✉️</Text>
-                <Text className="text-xl font-semibold text-gray-900 dark:text-white mb-2">대기 중인 요청이 없습니다</Text>
-                <Text className="text-base text-gray-500 dark:text-gray-400 text-center">새로운 친구를 찾아보세요!</Text>
+                <Text className="text-xl font-medium text-foreground mb-2">대기 중인 요청이 없습니다</Text>
+                <Text className="text-base text-muted-foreground text-center">새로운 친구를 찾아보세요!</Text>
               </View>
             ) : (
               <>
                 {pendingRequests.filter((r) => r.requesterId !== myUserId).length > 0 && (
                   <View className="mt-2 mb-4">
-                    <Text className="text-xs font-bold text-gray-400 dark:text-gray-500 mb-2 ml-1 uppercase tracking-wider">받은 요청</Text>
+                    <Text className="text-xs font-bold text-muted-foreground mb-2 ml-1 uppercase tracking-wider">받은 요청</Text>
                     {pendingRequests
                       .filter((r) => r.requesterId !== myUserId)
                       .map((item) => (
@@ -254,7 +254,7 @@ export default function FriendsScreen() {
 
                 {pendingRequests.filter((r) => r.requesterId === myUserId).length > 0 && (
                   <View className="mt-2 mb-4">
-                    <Text className="text-xs font-bold text-gray-400 dark:text-gray-500 mb-2 ml-1 uppercase tracking-wider">보낸 요청</Text>
+                    <Text className="text-xs font-bold text-muted-foreground mb-2 ml-1 uppercase tracking-wider">보낸 요청</Text>
                     {pendingRequests
                       .filter((r) => r.requesterId === myUserId)
                       .map((item) => (
@@ -268,11 +268,10 @@ export default function FriendsScreen() {
         )}
 
         {activeTab === 'BLOCKED' && (
-          <View className="mt-5">
+          <View className="mt-4">
             {blockedFriends.length === 0 ? (
               <View className="items-center py-12 px-6">
-                <Text className="text-6xl mb-4">🚫</Text>
-                <Text className="text-xl font-semibold text-gray-900 dark:text-white mb-2">차단된 사용자가 없습니다</Text>
+                <Text className="text-xl font-medium text-foreground mb-2">차단된 사용자가 없습니다</Text>
               </View>
             ) : (
               blockedFriends.map((item) => (

@@ -44,21 +44,21 @@ export default function SignupScreen() {
   };
 
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} className="flex-1 bg-gray-50 dark:bg-gray-950">
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} className="flex-1 bg-background">
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-        <View className="flex-1 justify-center px-8 py-6">
+        <View className="flex-1 justify-center px-4 py-6">
           <View className="items-center mb-8">
-            <Text className="text-3xl font-bold text-gray-900 dark:text-white mb-2">회원가입</Text>
-            <Text className="text-base text-gray-500 dark:text-gray-400">새로운 계정을 만들어보세요</Text>
+            <Text className="text-3xl font-bold text-foreground mb-2">회원가입</Text>
+            <Text className="text-base text-muted-foreground">새로운 계정을 만들어보세요</Text>
           </View>
 
           <View className="gap-4">
             <View className="gap-2">
-              <Text className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">아이디</Text>
+              <Text className="text-sm font-medium text-foreground ml-1">아이디</Text>
               <TextInput
-                className="h-[52px] border border-gray-200 dark:border-gray-800 rounded-xl px-4 text-base bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                className="bg-secondary border border-border rounded-xl p-4 text-foreground text-base"
                 placeholder="아이디를 입력하세요"
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor="#8E8E93"
                 value={username}
                 onChangeText={setUsername}
                 autoCapitalize="none"
@@ -67,22 +67,22 @@ export default function SignupScreen() {
             </View>
 
             <View className="gap-2">
-              <Text className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">이름</Text>
+              <Text className="text-sm font-medium text-foreground ml-1">이름</Text>
               <TextInput
-                className="h-[52px] border border-gray-200 dark:border-gray-800 rounded-xl px-4 text-base bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                className="bg-secondary border border-border rounded-xl p-4 text-foreground text-base"
                 placeholder="이름을 입력하세요"
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor="#8E8E93"
                 value={name}
                 onChangeText={setName}
               />
             </View>
 
             <View className="gap-2">
-              <Text className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">패스워드</Text>
+              <Text className="text-sm font-medium text-foreground ml-1">패스워드</Text>
               <TextInput
-                className="h-[52px] border border-gray-200 dark:border-gray-800 rounded-xl px-4 text-base bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                className="bg-secondary border border-border rounded-xl p-4 text-foreground text-base"
                 placeholder="패스워드를 입력하세요 (최소 6자)"
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor="#8E8E93"
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry
@@ -91,11 +91,11 @@ export default function SignupScreen() {
             </View>
 
             <View className="gap-2">
-              <Text className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">패스워드 확인</Text>
+              <Text className="text-sm font-medium text-foreground ml-1">패스워드 확인</Text>
               <TextInput
-                className="h-[52px] border border-gray-200 dark:border-gray-800 rounded-xl px-4 text-base bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                className="bg-secondary border border-border rounded-xl p-4 text-foreground text-base"
                 placeholder="패스워드를 다시 입력하세요"
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor="#8E8E93"
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
                 secureTextEntry
@@ -103,12 +103,12 @@ export default function SignupScreen() {
               />
             </View>
 
-            <TouchableOpacity className={`h-[52px] rounded-xl justify-center items-center bg-blue-600 dark:bg-blue-500 mt-2 ${loading ? 'opacity-60' : ''}`} onPress={handleSignup} disabled={loading}>
+            <TouchableOpacity className={`bg-primary-500 rounded-xl p-4 items-center mt-2 ${loading ? 'opacity-50' : ''}`} onPress={handleSignup} disabled={loading} activeOpacity={0.8}>
               <Text className="text-white text-base font-semibold">{loading ? '가입 중...' : '가입하기'}</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity className="h-[52px] rounded-xl justify-center items-center border border-blue-600 dark:border-blue-400" onPress={() => router.back()}>
-              <Text className="text-blue-600 dark:text-blue-400 text-base font-semibold">취소</Text>
+            <TouchableOpacity className="bg-transparent border border-primary-500 rounded-xl p-4 items-center" onPress={() => router.back()} activeOpacity={0.8}>
+              <Text className="text-primary-500 text-base font-semibold">취소</Text>
             </TouchableOpacity>
           </View>
         </View>

@@ -7,5 +7,5 @@ import { View, type ViewProps } from 'react-native';
 export type ThemedViewProps = ViewProps;
 
 export function ThemedView({ className, ...otherProps }: ThemedViewProps) {
-  return <View className={`bg-white dark:bg-gray-950 ${className || ''}`} {...otherProps} />;
+  return <View className={`bg-background ${className || ''}`} {...otherProps} />;
 }

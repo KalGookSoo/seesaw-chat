@@ -44,27 +44,27 @@ export default function LoginScreen() {
   };
 
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} className="flex-1 bg-gray-50 dark:bg-gray-950">
-      <View className="flex-1 justify-center px-6">
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} className="flex-1 bg-background">
+      <View className="flex-1 justify-center px-4">
         {/* Header */}
         <View className="items-center mb-12">
           <View className="mb-4">
-            <View className="w-20 h-20 rounded-2xl justify-center items-center bg-blue-600 dark:bg-blue-500 shadow-lg">
+            <View className="w-20 h-20 rounded-2xl justify-center items-center bg-primary-500 shadow-lg">
               <Text className="text-4xl">💬</Text>
             </View>
           </View>
-          <Text className="text-4xl font-bold text-gray-900 dark:text-white mb-2">Seesaw Chat</Text>
-          <Text className="text-base text-gray-500 dark:text-gray-400 font-medium">간편하게 연결되는 실시간 채팅</Text>
+          <Text className="text-3xl font-bold text-foreground mb-2">Seesaw Chat</Text>
+          <Text className="text-base text-muted-foreground">간편하게 연결되는 실시간 채팅</Text>
         </View>
 
         {/* Form */}
-        <View className="gap-6">
+        <View className="gap-4">
           <View className="gap-2">
-            <Text className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">아이디</Text>
+            <Text className="text-sm font-medium text-foreground ml-1">아이디</Text>
             <TextInput
-              className={`h-14 border-2 rounded-xl px-4 text-base bg-white dark:bg-gray-900 text-gray-900 dark:text-white ${username ? 'border-blue-300 dark:border-blue-700' : 'border-gray-200 dark:border-gray-800'}`}
+              className={`bg-secondary border border-border rounded-xl p-4 text-foreground text-base ${username ? 'border-primary-500' : ''}`}
               placeholder="아이디를 입력하세요"
-              placeholderTextColor="#9ca3af"
+              placeholderTextColor="#8E8E93"
               value={username}
               onChangeText={setUsername}
               autoCapitalize="none"
@@ -73,11 +73,11 @@ export default function LoginScreen() {
           </View>
 
           <View className="gap-2">
-            <Text className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">패스워드</Text>
+            <Text className="text-sm font-medium text-foreground ml-1">패스워드</Text>
             <TextInput
-              className={`h-14 border-2 rounded-xl px-4 text-base bg-white dark:bg-gray-900 text-gray-900 dark:text-white ${password ? 'border-blue-300 dark:border-blue-700' : 'border-gray-200 dark:border-gray-800'}`}
+              className={`bg-secondary border border-border rounded-xl p-4 text-foreground text-base ${password ? 'border-primary-500' : ''}`}
               placeholder="패스워드를 입력하세요"
-              placeholderTextColor="#9ca3af"
+              placeholderTextColor="#8E8E93"
               value={password}
               onChangeText={setPassword}
               secureTextEntry
@@ -86,16 +86,16 @@ export default function LoginScreen() {
           </View>
 
           <TouchableOpacity
-            className={`h-14 rounded-xl mt-4 bg-blue-600 dark:bg-blue-500 justify-center items-center shadow-md ${loading ? 'opacity-50' : ''}`}
+            className={`bg-primary-500 rounded-xl p-4 items-center mt-2 ${loading ? 'opacity-50' : ''}`}
             onPress={handleLogin}
             disabled={loading}
             activeOpacity={0.8}
           >
-            <Text className="text-white text-lg font-semibold">{loading ? '로그인 중...' : '로그인'}</Text>
+            <Text className="text-white font-semibold text-base">{loading ? '로그인 중...' : '로그인'}</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity className="py-4 items-center" onPress={handleSignup} activeOpacity={0.7}>
-            <Text className="text-blue-600 dark:text-blue-400 text-sm font-medium">아직 계정이 없으신가요? 회원가입</Text>
+          <TouchableOpacity className="p-4 items-center" onPress={handleSignup} activeOpacity={0.7}>
+            <Text className="text-primary-500 text-sm font-medium">아직 계정이 없으신가요? 회원가입</Text>
           </TouchableOpacity>
         </View>
       </View>

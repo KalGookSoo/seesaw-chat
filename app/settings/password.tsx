@@ -68,55 +68,55 @@ export default function PasswordChangeScreen() {
   };
 
   return (
-    <View className="flex-1 bg-slate-50 dark:bg-slate-950">
+    <View className="flex-1 bg-background">
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} className="flex-1">
-        <View className="flex-row items-center justify-between px-4 pt-16 pb-4 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
+        <View className="flex-row items-center justify-between px-4 pt-16 pb-4 bg-secondary border-b border-border">
           <TouchableOpacity onPress={() => router.back()} className="w-10 h-10 justify-center items-center">
-            <MaterialIcons name="chevron-left" size={24} className="text-slate-900 dark:text-white" />
+            <MaterialIcons name="chevron-left" size={24} className="text-foreground" />
           </TouchableOpacity>
-          <Text className="text-lg font-bold text-slate-900 dark:text-white">패스워드 변경</Text>
+          <Text className="text-xl font-medium text-foreground">패스워드 변경</Text>
           <View className="w-10" />
         </View>
 
-        <ScrollView className="flex-1 px-6" contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+        <ScrollView className="flex-1 px-4" contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
           <View className="items-center my-10 gap-4">
-            <View className="w-20 h-20 rounded-full bg-primary-50 dark:bg-primary-900/30 justify-center items-center">
-              <MaterialIcons name="lock-outline" size={48} color="#2563eb" />
+            <View className="w-20 h-20 rounded-full bg-secondary justify-center items-center">
+              <MaterialIcons name="lock-outline" size={48} color="#6366f1" />
             </View>
-            <Text className="text-sm text-slate-600 dark:text-slate-400 text-center px-8">주기적인 패스워드 변경으로 계정을 안전하게 보호하세요.</Text>
+            <Text className="text-sm text-muted-foreground text-center px-8">주기적인 패스워드 변경으로 계정을 안전하게 보호하세요.</Text>
           </View>
 
-          <View className="gap-6">
+          <View className="gap-4">
             <View className="gap-2">
-              <Text className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">새 패스워드</Text>
+              <Text className="text-sm font-medium text-secondary-foreground ml-1">새 패스워드</Text>
               <TextInput
-                className="h-14 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 text-base text-slate-900 dark:text-white"
+                className="bg-secondary border border-border rounded-xl p-4 text-foreground text-base"
                 value={newPassword}
                 onChangeText={setNewPassword}
                 placeholder="새 패스워드를 입력하세요"
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor="#8E8E93"
                 secureTextEntry
               />
             </View>
 
             <View className="gap-2">
-              <Text className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">새 패스워드 확인</Text>
+              <Text className="text-sm font-medium text-secondary-foreground ml-1">새 패스워드 확인</Text>
               <TextInput
-                className="h-14 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 text-base text-slate-900 dark:text-white"
+                className="bg-secondary border border-border rounded-xl p-4 text-foreground text-base"
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
                 placeholder="새 패스워드를 다시 입력하세요"
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor="#8E8E93"
                 secureTextEntry
               />
             </View>
 
             <TouchableOpacity
-              className={`h-14 bg-primary-600 dark:bg-primary-500 rounded-xl justify-center items-center mt-4 shadow-sm ${loading ? 'opacity-70' : ''}`}
+              className={`bg-primary-500 rounded-xl p-4 items-center mt-4 ${loading ? 'opacity-70' : ''}`}
               onPress={handleChangePassword}
               disabled={loading}
             >
-              <Text className="text-white text-base font-bold">{loading ? '변경 중...' : '패스워드 변경'}</Text>
+              <Text className="text-white font-semibold text-base">{loading ? '변경 중...' : '패스워드 변경'}</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

@@ -10,8 +10,8 @@ export function Collapsible({ children, title }: PropsWithChildren & { title: st
 
   return (
     <ThemedView>
-      <TouchableOpacity className="flex-row items-center gap-1.5" onPress={() => setIsOpen((value) => !value)} activeOpacity={0.8}>
-        <MaterialIcons name="chevron-right" size={18} className="text-gray-500 dark:text-gray-400" style={{ transform: [{ rotate: isOpen ? '90deg' : '0deg' }] }} />
+      <TouchableOpacity className="flex-row items-center gap-2" onPress={() => setIsOpen((value) => !value)} activeOpacity={0.8}>
+        <MaterialIcons name="chevron-right" size={18} className="text-muted-foreground" style={{ transform: [{ rotate: isOpen ? '90deg' : '0deg' }] }} />
 
         <ThemedText type="defaultSemiBold">{title}</ThemedText>
       </TouchableOpacity>
