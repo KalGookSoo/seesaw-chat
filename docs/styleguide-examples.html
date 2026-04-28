@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Seesaw Chat Styleguide Examples</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              primary: {
+                500: '#007AFF', // iOS Blue
+              },
+              background: '#FFFFFF',
+              foreground: '#000000',
+              secondary: {
+                DEFAULT: '#F2F2F7',
+                foreground: '#3C3C43',
+              },
+              border: '#C6C6C8',
+              muted: {
+                DEFAULT: '#8E8E93',
+                foreground: '#8E8E93',
+              },
+              success: '#34C759',
+              error: '#FF3B30',
+              warning: '#FF9500',
+              info: '#007AFF',
+            },
+          },
+        },
+      };
+    </script>
+    <style type="text/tailwindcss">
+      .dark {
+        --background: #000000;
+        --foreground: #ffffff;
+        --secondary: #1c1c1e;
+        --secondary-foreground: #ebebf5;
+        --border: #38383a;
+        --primary-500: #0a84ff;
+        --success: #30d158;
+        --error: #ff453a;
+        --warning: #ff9f0a;
+        --info: #0a84ff;
+      }
+
+      /* 다크모드 대응을 위한 수동 색상 매핑 (Play CDN 제약 해결용) */
+      .dark body {
+        background-color: theme('colors.black');
+        color: theme('colors.white');
+      }
+
+      .dark .bg-background {
+        background-color: #000000;
+      }
+
+      .dark .text-foreground {
+        color: #ffffff;
+      }
+
+      .dark .bg-secondary {
+        background-color: #1c1c1e;
+      }
+
+      .dark .text-secondary-foreground {
+        color: #ebebf5;
+      }
+
+      .dark .border-border {
+        border-color: #38383a;
+      }
+
+      .dark .bg-primary-500 {
+        background-color: #0a84ff;
+      }
+
+      .dark .text-primary-500 {
+        color: #0a84ff;
+      }
+
+      .dark .border-primary-500 {
+        border-color: #0a84ff;
+      }
+
+      .dark .text-success {
+        color: #30d158;
+      }
+
+      .dark .bg-success\/10 {
+        background-color: rgba(48, 209, 88, 0.1);
+      }
+
+      .dark .text-error {
+        color: #ff453a;
+      }
+
+      .dark .bg-error\/10 {
+        background-color: rgba(255, 69, 58, 0.1);
+      }
+
+      .dark .text-warning {
+        color: #ff9f0a;
+      }
+
+      .dark .bg-warning\/10 {
+        background-color: rgba(255, 159, 10, 0.1);
+      }
+
+      .dark .text-info {
+        color: #0a84ff;
+      }
+
+      .dark .bg-info\/10 {
+        background-color: rgba(10, 132, 255, 0.1);
+      }
+
+      .dark .bg-primary-500\/10 {
+        background-color: rgba(10, 132, 255, 0.1);
+      }
+
+      .dark .border-primary-500\/20 {
+        border-color: rgba(10, 132, 255, 0.2);
+      }
+
+      .dark .bg-error\/10 {
+        background-color: rgba(255, 69, 58, 0.1);
+      }
+
+      .dark .border-error\/20 {
+        border-color: rgba(255, 69, 58, 0.2);
+      }
+
+      .dark .border-primary-500 {
+        border-color: #0a84ff;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100 dark:bg-zinc-900 min-h-screen p-8 transition-colors duration-200">
+    <div class="max-w-2xl mx-auto space-y-12">
+      <header class="flex justify-between items-center border-b pb-4 border-gray-300 dark:border-zinc-700">
+        <h1 class="text-2xl font-bold dark:text-white">Styleguide Visual Examples</h1>
+        <button onclick="document.documentElement.classList.toggle('dark')" class="px-4 py-2 bg-zinc-800 text-white dark:bg-white dark:text-black rounded-lg text-sm font-medium">
+          Toggle Dark Mode
+        </button>
+      </header>
+
+      <!-- Typography -->
+      <section class="space-y-4">
+        <h2 class="text-sm font-bold uppercase tracking-wider text-gray-500">1. Typography</h2>
+        <div class="bg-background p-6 rounded-2xl shadow-sm border border-border space-y-4">
+          <p class="text-[30px] font-bold text-foreground leading-tight">Heading 1 (30px)</p>
+          <p class="text-[24px] font-semibold text-foreground leading-tight">Heading 2 (24px)</p>
+          <p class="text-[20px] font-medium text-foreground leading-tight">Heading 3 (20px)</p>
+          <p class="text-[18px] text-foreground">Body Large (18px)</p>
+          <p class="text-[16px] text-foreground">Body Base (16px)</p>
+          <p class="text-[14px] text-secondary-foreground">Body Small / Secondary (14px)</p>
+          <p class="text-[12px] text-muted-foreground">Caption / Muted (12px)</p>
+        </div>
+      </section>
+
+      <!-- Buttons -->
+      <section class="space-y-4">
+        <h2 class="text-sm font-bold uppercase tracking-wider text-gray-500">2. Buttons</h2>
+        <div class="bg-background p-6 rounded-2xl shadow-sm border border-border space-y-4">
+          <button class="w-full bg-primary-500 text-white rounded-xl p-4 font-semibold active:opacity-80 transition-opacity">Primary Action</button>
+          <button class="w-full bg-secondary text-secondary-foreground rounded-xl p-4 font-semibold active:opacity-80 transition-opacity">Secondary Action</button>
+          <button class="w-full bg-transparent border border-primary-500 text-primary-500 rounded-xl p-4 font-semibold hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
+            Ghost Action
+          </button>
+        </div>
+      </section>
+
+      <!-- Inputs -->
+      <section class="space-y-4">
+        <h2 class="text-sm font-bold uppercase tracking-wider text-gray-500">3. Inputs</h2>
+        <div class="bg-background p-6 rounded-2xl shadow-sm border border-border space-y-2">
+          <label class="text-sm font-medium text-foreground ml-1">Label</label>
+          <input
+            type="text"
+            class="w-full bg-secondary border border-border rounded-xl p-4 text-foreground text-base focus:outline-none focus:ring-2 focus:ring-primary-500/50"
+            placeholder="Type something..."
+          />
+          <p class="text-xs text-muted-foreground ml-1">Helper text goes here.</p>
+        </div>
+      </section>
+
+      <!-- Badges -->
+      <section class="space-y-4">
+        <h2 class="text-sm font-bold uppercase tracking-wider text-gray-500">4. Badges</h2>
+        <div class="bg-background p-6 rounded-2xl shadow-sm border border-border flex flex-wrap gap-2">
+          <span class="bg-success/10 text-success px-3 py-1 rounded-full text-xs font-bold">Success</span>
+          <span class="bg-error/10 text-error px-3 py-1 rounded-full text-xs font-bold">Error</span>
+          <span class="bg-warning/10 text-warning px-3 py-1 rounded-full text-xs font-bold">Warning</span>
+          <span class="bg-info/10 text-info px-3 py-1 rounded-full text-xs font-bold">Info</span>
+        </div>
+      </section>
+
+      <!-- Card -->
+      <section class="space-y-4">
+        <h2 class="text-sm font-bold uppercase tracking-wider text-gray-500">5. Card Layout</h2>
+        <div class="bg-secondary p-8 rounded-3xl">
+          <div class="bg-background rounded-2xl p-6 shadow-lg border border-border">
+            <div class="flex justify-between items-center mb-3">
+              <h3 class="text-lg font-bold text-foreground">Card Title</h3>
+              <div class="w-2.5 h-2.5 rounded-full bg-primary-500"></div>
+            </div>
+            <p class="text-sm text-secondary-foreground leading-relaxed">
+              이 카드는 스타일가이드의 간격(p-4), 테두리(border-border), 그리고 iOS 계층형 배경색(bg-background on bg-secondary)을 준수합니다.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Grid -->
+      <section class="space-y-4">
+        <h2 class="text-sm font-bold uppercase tracking-wider text-gray-500">6. Layout & Grid</h2>
+        <div class="bg-background p-6 rounded-2xl shadow-sm border border-border space-y-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div class="bg-secondary p-4 rounded-xl text-center text-foreground font-medium">Col 1</div>
+            <div class="bg-secondary p-4 rounded-xl text-center text-foreground font-medium">Col 2</div>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div class="bg-secondary p-4 rounded-xl text-center text-foreground text-xs font-medium">Col 1</div>
+            <div class="bg-secondary p-4 rounded-xl text-center text-foreground text-xs font-medium">Col 2</div>
+            <div class="bg-secondary p-4 rounded-xl text-center text-foreground text-xs font-medium">Col 3</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- List Group -->
+      <section class="space-y-4">
+        <h2 class="text-sm font-bold uppercase tracking-wider text-gray-500">7. List Group</h2>
+        <div class="bg-background rounded-2xl shadow-sm border border-border overflow-hidden">
+          <div class="divide-y divide-border">
+            <div class="p-4 flex justify-between items-center hover:bg-secondary transition-colors cursor-pointer">
+              <span class="text-foreground">List Item 1</span>
+              <span class="text-muted-foreground">→</span>
+            </div>
+            <div class="p-4 flex justify-between items-center hover:bg-secondary transition-colors cursor-pointer">
+              <span class="text-foreground">List Item 2</span>
+              <span class="text-muted-foreground">→</span>
+            </div>
+            <div class="p-4 flex justify-between items-center hover:bg-secondary transition-colors cursor-pointer">
+              <span class="text-foreground">List Item 3</span>
+              <span class="text-muted-foreground">→</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Accordion -->
+      <section class="space-y-4">
+        <h2 class="text-sm font-bold uppercase tracking-wider text-gray-500">8. Accordion</h2>
+        <div class="bg-background p-6 rounded-2xl shadow-sm border border-border">
+          <details class="group bg-secondary rounded-xl overflow-hidden">
+            <summary class="p-4 font-semibold text-foreground cursor-pointer list-none flex justify-between items-center">
+              Accordion Header
+              <span class="transition-transform group-open:rotate-180 text-foreground">▼</span>
+            </summary>
+            <div class="p-4 bg-background border-t border-border text-secondary-foreground">
+              아코디언 내용입니다. HTML5 details/summary 요소를 활용하여 구현했습니다.
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <!-- Alerts -->
+      <section class="space-y-4">
+        <h2 class="text-sm font-bold uppercase tracking-wider text-gray-500">9. Alerts</h2>
+        <div class="bg-background p-6 rounded-2xl shadow-sm border border-border space-y-3">
+          <div class="bg-primary-500/10 border border-primary-500/20 p-4 rounded-xl text-primary-500 font-medium">
+            이것은 정보 알림입니다.
+          </div>
+          <div class="bg-error/10 border border-error/20 p-4 rounded-xl text-error font-medium">
+            문제가 발생했습니다.
+          </div>
+        </div>
+      </section>
+
+      <!-- Progress & Spinners -->
+      <section class="space-y-4">
+        <h2 class="text-sm font-bold uppercase tracking-wider text-gray-500">10. Progress & Spinners</h2>
+        <div class="bg-background p-6 rounded-2xl shadow-sm border border-border space-y-6">
+          <div class="space-y-2">
+            <div class="flex justify-between text-xs text-muted-foreground uppercase font-semibold">
+              <span>Uploading...</span>
+              <span>60%</span>
+            </div>
+            <div class="h-2 w-full bg-secondary rounded-full overflow-hidden">
+              <div class="h-full bg-primary-500 w-[60%]"></div>
+            </div>
+          </div>
+          <div class="flex items-center gap-4">
+            <div class="w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
+            <div class="w-10 h-10 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
+            <span class="text-sm text-secondary-foreground font-medium">Loading data...</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tabs -->
+      <section class="space-y-4">
+        <h2 class="text-sm font-bold uppercase tracking-wider text-gray-500">11. Tabs</h2>
+        <div class="bg-background p-6 rounded-2xl shadow-sm border border-border">
+          <div class="flex bg-secondary p-1 rounded-xl">
+            <button class="flex-1 bg-background py-2 rounded-lg shadow-sm font-semibold text-foreground">Tab 1</button>
+            <button class="flex-1 py-2 font-medium text-secondary-foreground hover:text-foreground">Tab 2</button>
+            <button class="flex-1 py-2 font-medium text-secondary-foreground hover:text-foreground">Tab 3</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Table -->
+      <section class="space-y-4">
+        <h2 class="text-sm font-bold uppercase tracking-wider text-gray-500">12. Tables</h2>
+        <div class="bg-background rounded-2xl shadow-sm border border-border overflow-hidden">
+          <table class="w-full text-left border-collapse">
+            <thead class="bg-secondary border-b border-border">
+              <tr>
+                <th class="p-4 text-xs font-bold text-secondary-foreground uppercase">Name</th>
+                <th class="p-4 text-xs font-bold text-secondary-foreground uppercase">Status</th>
+                <th class="p-4 text-xs font-bold text-secondary-foreground uppercase">Role</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-border">
+              <tr>
+                <td class="p-4 text-sm text-foreground">John Doe</td>
+                <td class="p-4 text-sm text-success font-medium">Active</td>
+                <td class="p-4 text-sm text-muted-foreground">Admin</td>
+              </tr>
+              <tr>
+                <td class="p-4 text-sm text-foreground">Jane Smith</td>
+                <td class="p-4 text-sm text-warning font-medium">Pending</td>
+                <td class="p-4 text-sm text-muted-foreground">User</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Miscellaneous -->
+      <section class="space-y-4">
+        <h2 class="text-sm font-bold uppercase tracking-wider text-gray-500">13. Miscellaneous</h2>
+        <div class="bg-background p-6 rounded-2xl shadow-sm border border-border space-y-6">
+          <div class="flex border border-primary-500 rounded-xl overflow-hidden w-fit">
+            <button class="bg-primary-500 text-white px-4 py-2 font-medium border-r border-white/20">Left</button>
+            <button class="px-4 py-2 text-primary-500 font-medium border-r border-primary-500 hover:bg-primary-500/5">Middle</button>
+            <button class="px-4 py-2 text-primary-500 font-medium hover:bg-primary-500/5">Right</button>
+          </div>
+
+          <div class="bg-zinc-900 dark:bg-zinc-800 text-white p-4 rounded-2xl flex items-center shadow-xl max-w-sm">
+            <div class="w-2 h-2 rounded-full bg-success mr-3"></div>
+            <p class="text-sm font-medium flex-1 text-white">성공적으로 저장되었습니다.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+    <div class="h-20"></div>
+  </body>
+</html>

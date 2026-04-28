@@ -4,24 +4,43 @@
 
 @layer base {
     :root {
-        --color-primary-50: #eff6ff;
-        --color-primary-100: #dbeafe;
-        --color-primary-200: #bfdbfe;
-        --color-primary-300: #93c5fd;
-        --color-primary-400: #60a5fa;
-        --color-primary-500: #3b82f6;
-        --color-primary-600: #2563eb;
-        --color-primary-700: #1d4ed8;
-        --color-primary-800: #1e40af;
-        --color-primary-900: #1e3a8a;
-        --color-primary-950: #172554;
+        --color-primary-50: #F2F8FF;
+        --color-primary-100: #E1F0FF;
+        --color-primary-200: #BADAFF;
+        --color-primary-300: #8EBEFF;
+        --color-primary-400: #5AA1FF;
+        --color-primary-500: #007AFF; /* iOS Blue */
+        --color-primary-600: #0062CC;
+        --color-primary-700: #004B99;
+        --color-primary-800: #003366;
+        --color-primary-900: #001C33;
+        --color-primary-950: #000E1A;
 
-        --background: #f8fafc;
-        --foreground: #020617;
+        --background: #FFFFFF; /* System Background */
+        --foreground: #000000; /* Label */
+        --secondary-background: #F2F2F7; /* Secondary System Background */
+        --secondary-foreground: #3C3C43; /* Secondary Label */
+        --border: #C6C6C8; /* Separator */
+        --muted: #8E8E93; /* System Gray */
+
+        --success: #34C759;
+        --error: #FF3B30;
+        --warning: #FF9500;
+        --info: #007AFF;
     }
 
     .dark {
-        --background: #020617;
-        --foreground: #f8fafc;
+        --background: #000000; /* System Background */
+        --foreground: #FFFFFF; /* Label */
+        --secondary-background: #1C1C1E; /* Secondary System Background */
+        --secondary-foreground: #EBEBF5; /* Secondary Label */
+        --border: #38383A; /* Separator */
+        --muted: #8E8E93; /* System Gray */
+
+        --color-primary-500: #0A84FF; /* iOS Dark Blue */
+        --success: #30D158;
+        --error: #FF453A;
+        --warning: #FF9F0A;
+        --info: #0A84FF;
     }
 }
