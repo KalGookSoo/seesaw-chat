@@ -4,7 +4,7 @@
  */
 import { apiClient, decodeJwt } from './api-client';
 import { tokenStorage } from './storage';
-import type { ChatRoomExtended, ChatRoomResponse, FriendResponse, JsonWebToken, MessageResponse, PagedModelMessageResponse, PushSubscriptionResponse, UserResponse } from './mock-data';
+import type { ChatRoomExtended, ChatRoomResponse, FriendResponse, JsonWebToken, MessageResponse, PagedModelMessageResponse, PushDeviceRegisterRequest, PushDeviceResponse, UserResponse } from './mock-data';
 
 // ─────────────────────────────────────────────
 // 인증 API  POST /api/sign-in  /api/sign-up  /api/token/refresh
@@ -185,21 +185,18 @@ export const chatService = {
 };
 
 // ─────────────────────────────────────────────
-// 웹 푸시 구독 API
-// POST   /api/push/subscriptions
-// DELETE /api/push/subscriptions?endpoint=
+// 통합 푸시 기기 API
+// POST   /api/push/devices
+// GET    /api/push/devices/me
+// DELETE /api/push/devices/{deviceId}
 // ─────────────────────────────────────────────
 export const pushService = {
-  /** POST /api/push/subscriptions — PushSubscriptionRequest → PushSubscriptionResponse */
-  subscribe: (endpoint: string, p256dh: string, auth: string, userAgent: string, deviceName: string): Promise<PushSubscriptionResponse> =>
-    apiClient.post<PushSubscriptionResponse>('/api/push/subscriptions', {
-      endpoint,
-      p256dh,
-      auth,
-      userAgent,
-      deviceName,
-    }),
+  /** GET /api/push/devices/me → PushDeviceResponse[] */
+  getMyDevices: (): Promise<PushDeviceResponse[]> => apiClient.get<PushDeviceResponse[]>('/api/push/devices/me'),
 
-  /** DELETE /api/push/subscriptions?endpoint= → void */
-  unsubscribe: (endpoint: string): Promise<void> => apiClient.delete<void>(`/api/push/subscriptions?endpoint=${encodeURIComponent(endpoint)}`),
+  /** POST /api/push/devices — PushDeviceRegisterRequest → PushDeviceResponse */
+  registerDevice: (request: PushDeviceRegisterRequest): Promise<PushDeviceResponse> => apiClient.post<PushDeviceResponse>('/api/push/devices', request),
+
+  /** DELETE /api/push/devices/{deviceId} → void */
+  unregisterDevice: (deviceId: string): Promise<void> => apiClient.delete<void>(`/api/push/devices/${encodeURIComponent(deviceId)}`),
 };

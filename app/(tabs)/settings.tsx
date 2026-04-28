@@ -2,45 +2,132 @@ import React, { useEffect, useState } from 'react';
 import { Alert } from '@/services/alert';
 import { authService, pushService, userService } from '@/services/api';
 import type { UserResponse } from '@/services/mock-data';
+import { pushDeviceStorage } from '@/services/storage';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import Constants from 'expo-constants';
+import * as Device from 'expo-device';
+import * as Notifications from 'expo-notifications';
 import { router } from 'expo-router';
 import { useColorScheme } from 'nativewind';
-import { ScrollView, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { Platform, ScrollView, Switch, Text, TouchableOpacity, View } from 'react-native';
+
+async function getExpoPushToken(): Promise<string> {
+  if (Platform.OS === 'web') {
+    throw new Error('웹 푸시 등록은 아직 지원하지 않습니다.');
+  }
+
+  if (!Device.isDevice) {
+    throw new Error('푸시 알림은 실제 기기에서만 사용할 수 있습니다.');
+  }
+
+  if (Platform.OS === 'android') {
+    await Notifications.setNotificationChannelAsync('default', {
+      name: 'default',
+      importance: Notifications.AndroidImportance.MAX,
+    });
+  }
+
+  const existingPermission = await Notifications.getPermissionsAsync();
+  let finalStatus = existingPermission.status;
+
+  if (existingPermission.status !== 'granted') {
+    const requestedPermission = await Notifications.requestPermissionsAsync();
+    finalStatus = requestedPermission.status;
+  }
+
+  if (finalStatus !== 'granted') {
+    throw new Error('푸시 알림 권한이 허용되지 않았습니다.');
+  }
+
+  const projectId = Constants.easConfig?.projectId ?? Constants.expoConfig?.extra?.eas?.projectId;
+  const token = await Notifications.getExpoPushTokenAsync(projectId ? { projectId } : undefined);
+
+  return token.data;
+}
+
+function getPlatformInfo(): string {
+  if (Platform.OS === 'web') {
+    return typeof navigator !== 'undefined' ? navigator.userAgent : 'web';
+  }
+
+  return [Platform.OS, Device.osName, Device.osVersion, Device.modelName].filter(Boolean).join(' ');
+}
 
 export default function SettingsScreen() {
   const { colorScheme, setColorScheme } = useColorScheme();
   const isDarkMode = colorScheme === 'dark';
-  const [pushEnabled, setPushEnabled] = useState(true);
+  const [pushEnabled, setPushEnabled] = useState(false);
+  const [pushLoading, setPushLoading] = useState(false);
+  const [registeredPushDeviceId, setRegisteredPushDeviceId] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<UserResponse | null>(null);
 
   useEffect(() => {
-    const loadUserInfo = async () => {
+    const loadSettings = async () => {
       try {
         const userId = await authService.getCurrentUserId();
         if (userId) {
           const user = await userService.getUser(userId);
           setCurrentUser(user);
         }
+
+        const clientDeviceId = await pushDeviceStorage.getOrCreateClientDeviceId();
+        const storedRegisteredDeviceId = await pushDeviceStorage.getRegisteredDeviceId();
+        const devices = await pushService.getMyDevices();
+        const currentDevice = devices.find((device) => device.active && (device.id === storedRegisteredDeviceId || device.deviceName === clientDeviceId));
+
+        setPushEnabled(!!currentDevice);
+        setRegisteredPushDeviceId(currentDevice?.id ?? null);
+
+        if (currentDevice) {
+          await pushDeviceStorage.saveRegisteredDeviceId(currentDevice.id);
+        } else {
+          await pushDeviceStorage.clearRegisteredDeviceId();
+        }
       } catch (error: any) {
-        console.error('사용자 정보 로드 실패:', error);
+        console.error('설정 정보 로드 실패:', error);
       }
     };
-    loadUserInfo();
+
+    loadSettings();
   }, []);
 
   const handlePushToggle = async (value: boolean) => {
+    if (pushLoading) return;
+
+    setPushLoading(true);
+
     try {
       if (value) {
-        await pushService.subscribe('https://fcm.googleapis.com/fcm/send/mock-endpoint', 'mock-p256dh-key', 'mock-auth-key', navigator.userAgent, 'iOS Device');
+        const clientDeviceId = await pushDeviceStorage.getOrCreateClientDeviceId();
+        const token = await getExpoPushToken();
+        const registeredDevice = await pushService.registerDevice({
+          provider: 'EXPO',
+          token,
+          platform: getPlatformInfo(),
+          deviceId: clientDeviceId,
+        });
+
+        await pushDeviceStorage.saveRegisteredDeviceId(registeredDevice.id);
+        setRegisteredPushDeviceId(registeredDevice.id);
+        setPushEnabled(registeredDevice.active);
         Alert.alert('알림 설정', '푸시 알림이 활성화되었습니다.');
       } else {
-        await pushService.unsubscribe('https://fcm.googleapis.com/fcm/send/mock-endpoint');
+        const deviceId = registeredPushDeviceId ?? (await pushDeviceStorage.getRegisteredDeviceId());
+
+        if (deviceId) {
+          await pushService.unregisterDevice(deviceId);
+        }
+
+        await pushDeviceStorage.clearRegisteredDeviceId();
+        setRegisteredPushDeviceId(null);
+        setPushEnabled(false);
         Alert.alert('알림 설정', '푸시 알림이 비활성화되었습니다.');
       }
-      setPushEnabled(value);
-    } catch (error) {
+    } catch (error: any) {
       console.error('푸시 구독 오류:', error);
-      Alert.alert('오류', '푸시 알림 설정에 실패했습니다.');
+      Alert.alert('오류', error?.message || '푸시 알림 설정에 실패했습니다.');
+    } finally {
+      setPushLoading(false);
     }
   };
 
@@ -109,7 +196,7 @@ export default function SettingsScreen() {
                 <Text className="text-xs text-muted-foreground">새 메시지 알림을 받습니다</Text>
               </View>
             </View>
-            <Switch value={pushEnabled} onValueChange={handlePushToggle} trackColor={{ false: '#d1d5db', true: '#2563eb' }} thumbColor="#fff" />
+            <Switch disabled={pushLoading} value={pushEnabled} onValueChange={handlePushToggle} trackColor={{ false: '#d1d5db', true: '#2563eb' }} thumbColor="#fff" />
           </View>
         </View>
 

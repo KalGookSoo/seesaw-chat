@@ -7,10 +7,8 @@ import { tokenStorage } from '@/services/storage';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useColorScheme } from 'nativewind';
-import { Dimensions, FlatList, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { FlatList, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function ChatDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -352,27 +350,27 @@ export default function ChatDetailScreen() {
             }
           />
 
-            <SafeAreaView edges={['bottom', 'left', 'right']} className="bg-background shadow-lg border-t border-border">
-              <View className="flex-row px-4 py-3 items-end gap-2">
-                <TextInput
-                  className="flex-1 min-h-[44px] max-h-[120px] bg-secondary border border-border rounded-xl px-4 py-2.5 text-base text-foreground"
-                  placeholder={wsStatus === WebSocket.CONNECTING ? '연결 중...' : '메시지를 입력하세요...'}
-                  placeholderTextColor="#8E8E93"
-                  value={inputText}
-                  onChangeText={setInputText}
-                  multiline
-                  maxLength={1000}
-                  editable={wsStatus === WebSocket.OPEN}
-                />
-                <TouchableOpacity
-                  className={`w-11 h-11 rounded-full justify-center items-center ${inputText.trim() && wsStatus === WebSocket.OPEN ? 'bg-primary-500' : 'bg-secondary'}`}
-                  onPress={handleSend}
-                  disabled={!inputText.trim() || wsStatus !== WebSocket.OPEN}
-                >
-                  <MaterialIcons name="send" size={22} className={inputText.trim() && wsStatus === WebSocket.OPEN ? 'text-white' : 'text-muted-foreground'} />
-                </TouchableOpacity>
-              </View>
-            </SafeAreaView>
+          <SafeAreaView edges={['bottom', 'left', 'right']} className="bg-background shadow-lg border-t border-border">
+            <View className="flex-row px-4 py-3 items-end gap-2">
+              <TextInput
+                className="flex-1 min-h-[44px] max-h-[120px] bg-secondary border border-border rounded-xl px-4 py-2.5 text-base text-foreground"
+                placeholder={wsStatus === WebSocket.CONNECTING ? '연결 중...' : '메시지를 입력하세요...'}
+                placeholderTextColor="#8E8E93"
+                value={inputText}
+                onChangeText={setInputText}
+                multiline
+                maxLength={1000}
+                editable={wsStatus === WebSocket.OPEN}
+              />
+              <TouchableOpacity
+                className={`w-11 h-11 rounded-full justify-center items-center ${inputText.trim() && wsStatus === WebSocket.OPEN ? 'bg-primary-500' : 'bg-secondary'}`}
+                onPress={handleSend}
+                disabled={!inputText.trim() || wsStatus !== WebSocket.OPEN}
+              >
+                <MaterialIcons name="send" size={22} className={inputText.trim() && wsStatus === WebSocket.OPEN ? 'text-white' : 'text-muted-foreground'} />
+              </TouchableOpacity>
+            </View>
+          </SafeAreaView>
         </KeyboardAvoidingView>
       )}
 
@@ -480,9 +478,7 @@ export default function ChatDetailScreen() {
                     <Text className="text-base font-bold text-primary-600 dark:text-primary-400">{item.friend.name[0]}</Text>
                   </View>
                   <Text className="flex-1 text-base text-foreground">{item.friend.name}</Text>
-                  <View
-                    className={`w-6 h-6 rounded-full border-2 justify-center items-center ${selectedFriends.includes(item.friend.id) ? 'bg-primary-500 border-primary-500' : 'border-border'}`}
-                  >
+                  <View className={`w-6 h-6 rounded-full border-2 justify-center items-center ${selectedFriends.includes(item.friend.id) ? 'bg-primary-500 border-primary-500' : 'border-border'}`}>
                     {selectedFriends.includes(item.friend.id) && <MaterialIcons name="check" size={14} className="text-white" />}
                   </View>
                 </TouchableOpacity>

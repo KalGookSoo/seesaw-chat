@@ -85,6 +85,28 @@ export interface PushSubscriptionResponse {
   createdDate?: string;
 }
 
+export type PushProvider = 'EXPO' | 'WEB_PUSH';
+
+export interface PushDeviceRegisterRequest {
+  provider: PushProvider;
+  token?: string;
+  endpoint?: string;
+  keys?: Record<string, string>;
+  platform?: string;
+  deviceId?: string;
+}
+
+export interface PushDeviceResponse {
+  id: string;
+  userId: string;
+  provider: PushProvider;
+  pushToken?: string;
+  endpoint?: string;
+  deviceName?: string;
+  active: boolean;
+  createdDate?: string;
+}
+
 // ─── UI 확장 타입 ──────────────────────────────
 
 /** 채팅방 목록 화면에서 사용하는 확장 타입 (클라이언트 전용 필드 포함) */

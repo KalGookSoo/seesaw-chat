@@ -11,6 +11,8 @@ import { Platform } from 'react-native';
 const ACCESS_TOKEN_KEY = 'seesaw_access_token';
 const REFRESH_TOKEN_KEY = 'seesaw_refresh_token';
 const EXPIRES_AT_KEY = 'seesaw_expires_at';
+const PUSH_CLIENT_DEVICE_ID_KEY = 'seesaw_push_client_device_id';
+const PUSH_REGISTERED_DEVICE_ID_KEY = 'seesaw_push_registered_device_id';
 
 // 인메모리 fallback (AsyncStorage 미설치 시)
 const memoryStore: Record<string, string> = {};
@@ -103,5 +105,40 @@ export const tokenStorage = {
     if (!expiresAt) return true;
     // 30초 여유를 두고 만료 여부 확인
     return Date.now() >= expiresAt - 30_000;
+  },
+};
+
+function createDeviceId(): string {
+  if (globalThis.crypto && 'randomUUID' in globalThis.crypto) {
+    return globalThis.crypto.randomUUID();
+  }
+
+  return `device-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+export const pushDeviceStorage = {
+  async getOrCreateClientDeviceId(): Promise<string> {
+    const backend = await getBackend();
+    const storedDeviceId = await backend.getItem(PUSH_CLIENT_DEVICE_ID_KEY);
+
+    if (storedDeviceId) {
+      return storedDeviceId;
+    }
+
+    const deviceId = createDeviceId();
+    await backend.setItem(PUSH_CLIENT_DEVICE_ID_KEY, deviceId);
+    return deviceId;
+  },
+
+  async getRegisteredDeviceId(): Promise<string | null> {
+    return (await getBackend()).getItem(PUSH_REGISTERED_DEVICE_ID_KEY);
+  },
+
+  async saveRegisteredDeviceId(deviceId: string): Promise<void> {
+    await (await getBackend()).setItem(PUSH_REGISTERED_DEVICE_ID_KEY, deviceId);
+  },
+
+  async clearRegisteredDeviceId(): Promise<void> {
+    await (await getBackend()).removeItem(PUSH_REGISTERED_DEVICE_ID_KEY);
   },
 };
